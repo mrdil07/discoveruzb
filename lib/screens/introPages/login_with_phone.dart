@@ -1,29 +1,19 @@
+import 'package:discoveruzb/view_models/login_vm.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:discoveruzb/l10n/app_localizations.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+import 'package:provider/provider.dart';
 
 import 'otp.dart';
 
-class LoginWithPhone extends StatefulWidget {
+class LoginWithPhone extends StatelessWidget {
   const LoginWithPhone({Key? key}) : super(key: key);
 
   @override
-  State<LoginWithPhone> createState() => _LoginWithPhoneState();
-}
-
-class _LoginWithPhoneState extends State<LoginWithPhone> {
-  bool isLoading = false;
-  final phoneController = TextEditingController();
-
-  final _formKey = GlobalKey<FormState>();
-  @override
-  void initState() {
-    super.initState();
-    print(isLoading);
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final _formKey = GlobalKey<FormState>();
+    final loginVM = Provider.of<LoginViewModel>(context, listen: false);
+
     return Scaffold(
       body: SafeArea(
         top: true,
@@ -36,26 +26,25 @@ class _LoginWithPhoneState extends State<LoginWithPhone> {
             key: _formKey,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              //mainAxisSize: MainAxisSize.m,
               children: [
                 Text(
                   AppLocalizations.of(context)!.enterPhoneNumber,
-                  style: const TextStyle(fontSize: 28, color: Colors.black),
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Colors.black),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(
                   height: MediaQuery.of(context).size.width / 6,
                 ),
-                //phone
                 TextFormField(
                   validator: (input) => input!.isEmpty
                       ? AppLocalizations.of(context)!.enterPhoneNumber
                       : null,
-                  controller: phoneController,
+                  controller: loginVM.phoneController,
                   inputFormatters: [
                     MaskTextInputFormatter(mask: "## ### ## ##"),
                   ],
                   keyboardType: TextInputType.phone,
+                  onChanged: (value) => loginVM.updatePhoneNumber(value),
                   decoration: InputDecoration(
                     isDense: true,
                     prefixIcon: const Padding(
@@ -99,77 +88,55 @@ class _LoginWithPhoneState extends State<LoginWithPhone> {
                 SizedBox(
                   height: MediaQuery.of(context).size.width / 5,
                 ),
-                TextButton(
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      setState(() {
-                        isLoading = true;
-                      });
-
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) =>
-                              OTPScreen(phoneController.text)));
-                      setState(() {
-                        isLoading = false;
-                      });
-                    }
+                Consumer<LoginViewModel>(
+                  builder: (context, vm, child) {
+                    return TextButton(
+                      onPressed: vm.isLoading
+                          ? null
+                          : () async {
+                              if (_formKey.currentState!.validate()) {
+                                await vm.submitPhoneNumber();
+                                if (vm.error == null) {
+                                  // Only navigate if no error occurred during submission
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => OTPScreen(
+                                          '998${vm.phoneNumber.replaceAll(' ', '')}'), // Pass formatted phone number
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(vm.error!)),
+                                  );
+                                }
+                              }
+                            },
+                      style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 25, vertical: 10),
+                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.teal.shade600,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              side: const BorderSide(
+                                  color: Colors.white,
+                                  width: 0.5,
+                                  style: BorderStyle.solid))),
+                      child: vm.isLoading
+                          ? const Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              AppLocalizations.of(context)!.getSMS,
+                              style: const TextStyle(
+                                fontSize: 28,
+                              ),
+                            ),
+                    );
                   },
-                  style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 25, vertical: 10),
-                      primary: Colors.white,
-                      backgroundColor: Colors.teal.shade600,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          side: const BorderSide(
-                              color: Colors.white,
-                              width: 0.5,
-                              style: BorderStyle.solid))),
-                  child: !isLoading
-                      ? Text(
-                          AppLocalizations.of(context)!.getSMS,
-                          style: const TextStyle(
-                            fontSize: 28,
-                          ),
-                        )
-                      : const Center(
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                          ),
-                        ),
                 ),
-                // Expanded(
-                //   child: Column(
-                //     mainAxisAlignment: MainAxisAlignment.end,
-                //     mainAxisSize: MainAxisSize.min,
-                //     children: [
-                //       Text(
-                //         AppLocalizations.of(context)!.registerWith,
-                //         style: Theme.of(context).textTheme.headline3?.copyWith(
-                //             color: Colors.black54, fontWeight: FontWeight.w400),
-                //       ),
-                //       const SizedBox(height: 20),
-                //       Row(
-                //         mainAxisAlignment: MainAxisAlignment.center,
-                //         children: [
-                //           Container(
-                //             child: Image.asset(
-                //               'assets/images/google.png',
-                //               width: 60,
-                //             ),
-                //           ),
-                //           const SizedBox(width: 30),
-                //           Container(
-                //             child: Image.asset(
-                //               'assets/images/facebook.png',
-                //               width: 60,
-                //             ),
-                //           )
-                //         ],
-                //       )
-                //     ],
-                //   ),
-                // ),
               ],
             ),
           ),
@@ -177,8 +144,4 @@ class _LoginWithPhoneState extends State<LoginWithPhone> {
       ),
     );
   }
-
-  // void loginWithFacebook() {}
-  //
-  // void loginWithGoogle() {}
 }

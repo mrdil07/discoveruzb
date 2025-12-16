@@ -27,7 +27,7 @@ class _CreatingGalleryState extends State<CreatingGallery> {
       appBar: AppBar(
         title: Text(
           "Biz bilan shaxsiy galleriyangizni yarating",
-          style: Theme.of(context).textTheme.headline4,
+          style: Theme.of(context).textTheme.headlineLarge,
         ),
       ),
       body: Form(
@@ -125,7 +125,7 @@ class _CreatingGalleryState extends State<CreatingGallery> {
                   "Galleriya yaratish",
                   style: Theme.of(context)
                       .textTheme
-                      .headline4
+                      .headlineLarge
                       ?.copyWith(color: Colors.white),
                 )),
             const SizedBox(height: 20),

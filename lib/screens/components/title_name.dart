@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:discoveruzb/l10n/app_localizations.dart';
 
 import '../famouses.dart';
 
 class TitleName extends StatelessWidget {
-  String? headerName;
-  TitleName({Key? key, this.headerName}) : super(key: key);
+  final String? headerName;
+  const TitleName({Key? key, this.headerName}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,7 @@ class TitleName extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context)
                 .textTheme
-                .headline2
+                .headlineSmall // Changed to headlineSmall
                 ?.copyWith(color: Colors.tealAccent.shade700),
           ),
           Expanded(child: Container()),
@@ -32,10 +32,10 @@ class TitleName extends StatelessWidget {
               AppLocalizations.of(context)!.all,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.headline6!.copyWith(
+              style: Theme.of(context).textTheme.titleMedium!.copyWith(
                   fontWeight: FontWeight.normal,
                   color: Colors.tealAccent.shade400,
-                  fontSize: 20),
+                  fontSize: 20), // Changed to titleMedium
             ),
           ),
         ],

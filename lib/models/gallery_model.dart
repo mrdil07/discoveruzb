@@ -1,18 +1,16 @@
-class GalleryModel {
-  String placeName;
-  List<dynamic> images;
-  String date;
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:flutter/foundation.dart';
 
-  GalleryModel(
-      {required this.images, required this.date, required this.placeName});
+part 'gallery_model.freezed.dart';
+part 'gallery_model.g.dart';
 
-  GalleryModel.fromJson(Map<String, dynamic> json)
-      : images = json['images'],
-        date = json['date'],
-        placeName = json['placeName'];
-  Map<String, dynamic> toJson() => {
-        "placeName": placeName,
-        "images": images,
-        "date": date,
-      };
+@freezed
+class GalleryModel with _$GalleryModel {
+  const factory GalleryModel({
+    required String placeName,
+    required List<String> images,
+    required String date,
+  }) = _GalleryModel;
+
+  factory GalleryModel.fromJson(Map<String, dynamic> json) => _$GalleryModelFromJson(json);
 }

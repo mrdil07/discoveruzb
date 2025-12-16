@@ -9,6 +9,7 @@ class CustomTextField extends StatefulWidget {
   final TextInputType? keyboardType;
   final int? maxLines;
   final FormFieldValidator? validator;
+  final ValueChanged<String>? onChanged;
   const CustomTextField(
       {Key? key,
       required this.hintText,
@@ -16,6 +17,7 @@ class CustomTextField extends StatefulWidget {
       required this.controller,
       this.validator,
       this.onPressed,
+      this.onChanged,
       this.maxLines = 1})
       : super(key: key);
 
@@ -41,7 +43,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
         autovalidateMode: AutovalidateMode.onUserInteraction,
         minLines: 1,
         maxLines: widget.maxLines,
-        onChanged: (input) {
+        onChanged: widget.onChanged ?? (input) {
           setState(() {
             provider.comment = input;
           });

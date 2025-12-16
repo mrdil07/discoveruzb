@@ -3,7 +3,7 @@ import 'package:discoveruzb/screens/components/product_box.dart';
 import 'package:discoveruzb/widgets/loading.dart';
 import 'package:discoveruzb/widgets/nodata.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:discoveruzb/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../../../view_models/home_vm.dart';
@@ -30,9 +30,9 @@ class _HomePageState extends State<HomePage> {
       child: Scaffold(
         backgroundColor: Colors.white,
         body: RefreshIndicator(
-          onRefresh: provider.refresh,
+          onRefresh: () => provider.refreshAllData(),
           child: SingleChildScrollView(
-            controller: provider.scrollController,
+            //controller: provider.scrollController,
             physics: const ClampingScrollPhysics(),
             child: Column(
               mainAxisSize: MainAxisSize.min,

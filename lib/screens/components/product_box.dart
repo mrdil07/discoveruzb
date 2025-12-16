@@ -5,10 +5,10 @@ import '../../models/places_model.dart';
 import '../pageViewPages/category_page/detailsPlace.dart';
 
 class ProductBox extends StatelessWidget {
-  double height;
-  double weight;
-  List<Place> place;
-  ProductBox({
+  final double height;
+  final double weight;
+  final List<Place> place;
+  const ProductBox({
     Key? key,
     required this.height,
     required this.place,
@@ -86,8 +86,7 @@ class ProductBox extends StatelessWidget {
                           place[i].placeName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style:
-                              Theme.of(context).textTheme.headline5!.copyWith(
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                     fontWeight: FontWeight.normal,
                                   ),
                         ),
@@ -95,8 +94,7 @@ class ProductBox extends StatelessWidget {
                           place[i].address,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style:
-                              Theme.of(context).textTheme.headline6!.copyWith(
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
                                     fontWeight: FontWeight.normal,
                                     color: Colors.grey[400]!,
                                     fontSize: 16,
@@ -122,8 +120,7 @@ class ProductBox extends StatelessWidget {
           const begin = Offset(1.0, 0.0);
           const end = Offset(0.0, 0.0);
           const curves = Curves.easeIn;
-          var tween =
-              Tween(begin: begin, end: end).chain(CurveTween(curve: curves));
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curves));
           return SlideTransition(
             position: animation.drive(tween),
             child: child,

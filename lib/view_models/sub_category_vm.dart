@@ -1,34 +1,65 @@
 import 'package:flutter/cupertino.dart';
-
 import '../models/places_model.dart';
 import '../service/data_service.dart';
 
 class SubCategoryVM extends ChangeNotifier {
-  bool isLoading = false;
-  List<Place> subCategory = [];
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
 
-  String? address1 = 'Manzil hududi';
+  List<Place> _subCategory = [];
+  List<Place> get subCategory => _subCategory;
 
-  apiLoadPosts(String subCatName) {
-    isLoading = true;
+  String _selectedRegion = 'Manzil hududi';
+  String get selectedRegion => _selectedRegion;
+
+  String? _error;
+  String? get error => _error;
+
+  set selectedRegion(String region) {
+    _selectedRegion = region;
     notifyListeners();
-    DataService.loadFeedsNew(subCatName).then((value) => {_resLoadPost(value)});
   }
 
-  _resLoadPost(List<Place> places) {
-    subCategory = places;
-    isLoading = false;
+  Future<void> fetchPostsByCategory(String subCatName) async {
+    _setLoading(true);
+    _clearError();
+    try {
+      _subCategory = await DataService.loadFeedsNew(subCatName);
+    } catch (e) {
+      _setError(e.toString());
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> fetchPostsByCategoryAndRegion(String subCatName) async {
+    if (_selectedRegion == 'Manzil hududi') {
+      // Fetch all posts if no region is selected
+      await fetchPostsByCategory(subCatName);
+      return;
+    }
+    _setLoading(true);
+    _clearError();
+    try {
+      _subCategory = await DataService.loadFeedLocation(subCatName, _selectedRegion);
+    } catch (e) {
+      _setError(e.toString());
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  void _setLoading(bool loading) {
+    _isLoading = loading;
     notifyListeners();
   }
 
-  apiLoadPostsNew(String subCatName) async {
-    isLoading = true;
+  void _setError(String errorMessage) {
+    _error = errorMessage;
     notifyListeners();
-    await DataService.loadFeedLocation(subCatName, address1!)
-        .then((value) => {_resLoadPost(value)});
   }
 
-  var mainController = ScrollController();
-  var subController = ScrollController();
-  String noData = '';
+  void _clearError() {
+    _error = null;
+  }
 }

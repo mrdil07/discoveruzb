@@ -28,13 +28,15 @@ class RegistrationViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _clearError() {
+  // Making clearError public
+  void clearError() {
     _error = null;
+    notifyListeners(); // Notify listeners when error is cleared
   }
 
   Future<void> registerUser(String phoneNumber) async {
     _setLoading(true);
-    _clearError();
+    clearError();
     _isRegistered = false;
     try {
       String fullname = '${nameController.text.trim()} ${famController.text.trim()}';
@@ -44,6 +46,16 @@ class RegistrationViewModel extends ChangeNotifier {
       if (uid == null) {
         _setError('Foydalanuvchi ID topilmadi. Iltimos, qayta urinib ko\'ring.');
         _setLoading(false);
+        return;
+      }
+
+      // Check if this is test mode (test-user-id is used in development)
+      if (uid == 'test-user-id') {
+        debugPrint('Test mode: Skipping Firestore write, registration simulated');
+        await Prefs.saveFullname(fullname);
+        _isRegistered = true;
+        _setLoading(false);
+        notifyListeners();
         return;
       }
 

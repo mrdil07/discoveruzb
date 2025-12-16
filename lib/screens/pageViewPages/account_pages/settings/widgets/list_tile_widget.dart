@@ -15,7 +15,7 @@ class ListTile1 extends StatelessWidget {
       minLeadingWidth: 5,
       title: Text(
         title ?? '...',
-        style: Theme.of(context).textTheme.headline6,
+        style: Theme.of(context).textTheme.headlineSmall,
       ),
       trailing: SizedBox(
         width: MediaQuery.of(context).size.width / 3,
@@ -23,7 +23,7 @@ class ListTile1 extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Text(suffixText ?? '...',
-                style: Theme.of(context).textTheme.headline6),
+                style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(width: 10),
             icon != null
                 ? Icon(

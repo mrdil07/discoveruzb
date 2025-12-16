@@ -10,134 +10,221 @@ import '../service/file_service.dart';
 import '../service/pref_service.dart';
 
 class AccountViewModel extends ChangeNotifier {
-  List<Place> places = [];
-  var isLoading = false;
-  String fullName = '', imgUrl = '', email = '';
+  List<Place> _places = [];
+  List<Place> get places => _places;
+
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
+  String _fullName = '';
+  String get fullName => _fullName;
+
+  String _imgUrl = '';
+  String get imgUrl => _imgUrl;
+
+  String _email = '';
+  String get email => _email;
+
   File? _image;
-  var subController = ScrollController();
-  var isSelected = [true, false];
-  ImagePicker imagePicker = ImagePicker();
-  String? phone = '';
+  File? get image => _image;
 
-  imgFromGallery() async {
-    XFile? image = await imagePicker.pickImage(
-        source: ImageSource.gallery, imageQuality: 50);
+  final ScrollController _subController = ScrollController();
+  ScrollController get subController => _subController;
 
-    _image = File(image!.path);
+  List<bool> _isSelected = [true, false]; // Made private
+  List<bool> get isSelected => _isSelected;
+
+  final ImagePicker _imagePicker = ImagePicker();
+
+  String? _phone = '';
+  String? get phone => _phone;
+
+  String? _error;
+  String? get error => _error;
+
+  void _setLoading(bool loading) {
+    _isLoading = loading;
     notifyListeners();
-
-    apiChangePhoto();
-  } //galeriyadan rasm olish uchun
-
-  imgFromCamera() async {
-    XFile? image = await imagePicker.pickImage(
-        source: ImageSource.camera, imageQuality: 50);
-
-    _image = File(image!.path);
-    notifyListeners();
-
-    apiChangePhoto();
-  } //kameradan rasm olish uchun
-
-  void showPicker(context) {
-    showModalBottomSheet(
-        context: context,
-        builder: (BuildContext bc) {
-          return SafeArea(
-            child: Wrap(
-              children: <Widget>[
-                ListTile(
-                    leading: const Icon(Icons.photo_library),
-                    title: const Text('Gallery'),
-                    onTap: () {
-                      imgFromGallery();
-                      Navigator.of(context).pop();
-                    }),
-                ListTile(
-                  leading: const Icon(Icons.photo_camera),
-                  title: const Text('Camera'),
-                  onTap: () {
-                    imgFromCamera();
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            ),
-          );
-        });
   }
 
-  void apiloadUser() async {
-    isLoading = true;
+  void _setError(String errorMessage) {
+    _error = errorMessage;
     notifyListeners();
-    DataService.loadUser().then((value) => {showUserInfo(value)});
-  } // user malumotlarini yangilab beradi shuning uchun bu initState.ga yozib qoyilgan.
-
-  showUserInfo(Users users) {
-    isLoading = false;
-    fullName = users.fullname;
-    email = users.email;
-    imgUrl = users.imgUrl;
-    notifyListeners();
-  } // uida rasmni korish uchun mos ozgarruvchilar userni yangi data.lari bilan tenglanyapti
-
-  apiChangePhoto() {
-    if (_image == null) return;
-
-    isLoading = true;
-    notifyListeners();
-
-    FileService.uploadFile(_image!, FileService.folderGallery)
-        .then((downloadUrl) => {
-              apiUpdateUser(downloadUrl),
-            });
   }
 
-  apiUpdateUser(String downloadUrl) async {
-    Users users = await DataService.loadUser();
-    isLoading = false;
-    users.imgUrl = downloadUrl;
-    notifyListeners();
-
-    await DataService.updateUser(users);
-    apiloadUser();
+  // Making clearError public
+  void clearError() {
+    _error = null;
+    notifyListeners(); // Notify listeners when error is cleared
   }
 
-  void apiLoadMyPosts() async {
-    phone = await Prefs.loadPhone();
-    isLoading = true;
-
+  // Method to update isSelected state
+  void toggleSelected(int index) {
+    for (int i = 0; i < _isSelected.length; i++) {
+      _isSelected[i] = i == index;
+    }
     notifyListeners();
-    if (phone == '+998911490349') {
-      await DataService.loadPosts().then((value) => {resLoadPosts(value)});
-    } else {
-      await DataService.loadLiked().then((value) => {resLoadPosts(value)});
+  }
+
+  Future<void> pickImageFromGallery() async {
+    clearError(); // Use public clearError
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+          source: ImageSource.gallery, imageQuality: 50);
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
+        notifyListeners();
+        await _changeProfilePhoto();
+      }
+    } catch (e) {
+      _setError('Galereyadan rasm tanlashda xatolik: ${e.toString()}');
     }
   }
 
-  resLoadPosts(List<Place> newPlaces) {
-    places = newPlaces;
-    isLoading = false;
-    notifyListeners();
+  Future<void> pickImageFromCamera() async {
+    clearError(); // Use public clearError
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+          source: ImageSource.camera, imageQuality: 50);
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
+        notifyListeners();
+        await _changeProfilePhoto();
+      }
+    } catch (e) {
+      _setError('Kameradan rasm olishda xatolik: ${e.toString()}');
+    }
   }
 
-  void apiLoadMySaved() async {
-    isLoading = true;
-    notifyListeners();
-    await DataService.loadSaved().then((value) => {resLoadPosts(value)});
+  Future<void> fetchUserProfile() async {
+    _setLoading(true);
+    clearError();
+    try {
+      String? userId = await Prefs.loadUserId();
+      
+      // Test mode - use local data
+      if (userId == 'test-user-id') {
+        debugPrint('Test mode: Loading local user profile');
+        _fullName = await Prefs.loadFullname() ?? 'Test User';
+        _phone = await Prefs.loadPhone() ?? '+998911490349';
+        _email = '';
+        _imgUrl = '';
+        notifyListeners();
+        _setLoading(false);
+        return;
+      }
+      
+      Users user = await DataService.loadUser();
+      _fullName = user.fullname;
+      _email = user.email;
+      _imgUrl = user.imgUrl;
+      _phone = user.phoneNumber;
+      notifyListeners();
+    } catch (e) {
+      _setError('Foydalanuvchi ma\'lumotlarini yuklashda xatolik: ${e.toString()}');
+    } finally {
+      _setLoading(false);
+    }
   }
 
-  resLoadSaved(List<Place> newPlaces) {
-    places = newPlaces;
-    isLoading = false;
-    notifyListeners();
+  Future<void> _changeProfilePhoto() async {
+    if (_image == null) return;
+
+    _setLoading(true);
+    clearError();
+    try {
+      String downloadUrl = await FileService.uploadFile(_image!, FileService.folderUserImg);
+      await _updateUserImageUrl(downloadUrl);
+    } catch (e) {
+      _setError('Rasm yuklashda yoki yangilashda xatolik: ${e.toString()}');
+    } finally {
+      _setLoading(false);
+    }
   }
 
-  void resDelPosts(Place place, BuildContext context) async {
-    isLoading = true;
-    notifyListeners();
-    Navigator.pop(context);
-    DataService.removePost(place, place.id)
-        .then((value) => {isLoading = false, apiLoadMyPosts()});
+  Future<void> _updateUserImageUrl(String downloadUrl) async {
+    clearError();
+    try {
+      Users user = await DataService.loadUser();
+      Users updatedUser = user.copyWith(imgUrl: downloadUrl);
+      await DataService.updateUser(updatedUser);
+      _imgUrl = downloadUrl;
+      notifyListeners();
+      await fetchUserProfile();
+    } catch (e) {
+      _setError('Foydalanuvchi rasmini yangilashda xatolik: ${e.toString()}');
+    }
+  }
+
+  Future<void> fetchMyPosts() async {
+    _setLoading(true);
+    clearError();
+    try {
+      String? userId = await Prefs.loadUserId();
+      String? loadedPhone = await Prefs.loadPhone();
+      _phone = loadedPhone;
+      notifyListeners();
+
+      // Test mode - return empty list
+      if (userId == 'test-user-id') {
+        debugPrint('Test mode: Skipping Firestore, returning empty posts');
+        _places = [];
+        _setLoading(false);
+        return;
+      }
+
+      if (_phone == '+998911490349') {
+        _places = await DataService.loadPosts();
+      } else {
+        _places = await DataService.loadLiked();
+      }
+    } catch (e) {
+      _setError('Mening postlarimni yuklashda xatolik: ${e.toString()}');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> fetchMySavedPosts() async {
+    _setLoading(true);
+    clearError();
+    try {
+      String? userId = await Prefs.loadUserId();
+      
+      // Test mode - return empty list
+      if (userId == 'test-user-id') {
+        debugPrint('Test mode: Skipping Firestore, returning empty saved posts');
+        _places = [];
+        _setLoading(false);
+        return;
+      }
+      
+      _places = await DataService.loadSaved();
+    } catch (e) {
+      _setError('Saqlangan postlarni yuklashda xatolik: ${e.toString()}');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> deletePost(Place place) async {
+    _setLoading(true);
+    clearError(); // Use public clearError
+    try {
+      await DataService.removePost(place, place.id);
+      _places.removeWhere((p) => p.id == place.id);
+      notifyListeners();
+      await fetchMyPosts(); // Refresh the list after deletion
+    } catch (e) {
+      _setError('Postni o\'chirishda xatolik: ${e.toString()}');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _subController.dispose();
+    super.dispose();
   }
 }

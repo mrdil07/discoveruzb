@@ -3,8 +3,10 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 
 class HeroNetImage extends StatelessWidget {
-  List images;
-  HeroNetImage({Key? key, required this.images}) : super(key: key);
+  final List<String> images;
+  final int initialIndex;
+
+  const HeroNetImage({Key? key, required this.images, this.initialIndex = 0}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +23,7 @@ class HeroNetImage extends StatelessWidget {
                 autoPlayAnimationDuration: const Duration(seconds: 2),
                 enlargeCenterPage: true,
                 viewportFraction: 0.9,
-                initialPage: 2,
+                initialPage: initialIndex, // Use the provided initialIndex
               ),
               itemBuilder:
                   (BuildContext context, int index, int pageViewIndex) {
@@ -52,8 +54,8 @@ class HeroNetImage extends StatelessWidget {
 }
 
 class HeroAssetImage extends StatelessWidget {
-  String image;
-  HeroAssetImage({Key? key, required this.image}) : super(key: key);
+  final String image;
+  const HeroAssetImage({Key? key, required this.image}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -1,72 +1,108 @@
-import 'package:flutter/cupertino.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter/material.dart';
 
 import '../models/comments.dart';
 import '../models/places_model.dart';
 import '../service/api_response.dart';
 import '../service/data_service.dart';
-import 'home_vm.dart';
 
 class CommentVM extends ChangeNotifier {
   ApiResponse _apiResponse = ApiResponse.initial("loading");
-  ApiResponse get response {
-    return _apiResponse;
-  }
+  ApiResponse get response => _apiResponse;
 
   final TextEditingController commentTextController = TextEditingController();
-
-  String comment = '';
-
-  Future apiComment(Place place, Comments comments) async {
-    place.comments.add(comments.toJson());
-    print(place.comments.length);
-    notifyListeners();
-    var res = await DataService.putComment(place);
+  String _comment = '';
+  String get comment => _comment;
+  set comment(String value) {
+    _comment = value;
     notifyListeners();
   }
 
-  Future apiDeleteComment(Place place, Comments comments) async {
-    place.comments.remove(comments);
-    notifyListeners();
-    await DataService.putComment(place);
+  void updateCommentText(String text) {
+    _comment = text;
     notifyListeners();
   }
 
-  Future sendComment(Place place, BuildContext context) async {
-    final providerUser = Provider.of<HomeViewModel>(context, listen: false);
-    await apiComment(
-      place,
-      Comments(
+  Future<void> addCommentToPlace(
+      Place place,
+      String fullname,
+      String? phoneNumber,
+      String imgUrl,
+      ) async {
+    _apiResponse = ApiResponse.loading('Sharh qo\'shilmoqda...');
+    notifyListeners();
+    try {
+      final newComment = Comments(
         users: {
-          "fullname": providerUser.fullName,
-          "phoneNumber": providerUser.phone,
-          "imgUrl": providerUser.imgUrl,
+          "fullname": fullname,
+          "phoneNumber": phoneNumber ?? '',
+          "imgUrl": imgUrl,
         },
-        comment: comment,
-        dateTime: DateTime.now().toString(),
-      ),
-    );
-    commentTextController.text = '';
-    comment = "";
-    getComments(place.id.toString());
-    notifyListeners();
+        comment: _comment,
+        dateTime: DateTime.now().millisecondsSinceEpoch,
+      );
+      List<String> updatedCommentsList = List.from(place.comments); // Create a mutable copy
+      updatedCommentsList.add(newComment.toJson().toString()); // Add the new comment as a string representation of its JSON
+
+      Place updatedPlace = place.copyWith(comments: updatedCommentsList);
+
+      await DataService.putComment(updatedPlace);
+      commentTextController.clear();
+      _comment = '';
+      _apiResponse = ApiResponse.completed('Sharh muvaffaqiyatli qo\'shildi!');
+      await fetchComments(place.id.toString()); // Refresh comments
+    } catch (e) {
+      _apiResponse = ApiResponse.error('Sharh qo\'shishda xatolik: ${e.toString()}');
+    } finally {
+      notifyListeners();
+    }
   }
 
-  Future getComments(String id) async {
-    _apiResponse = ApiResponse.initial('loading');
+  Future<void> deleteCommentFromPlace(Place place, Comments commentToDelete) async {
+    _apiResponse = ApiResponse.loading('Sharh o\'chirilmoqda...');
     notifyListeners();
-    var res = await DataService.loadComments(id);
-    if (res == "Error") {
-      _apiResponse = ApiResponse.error(res);
+    try {
+      List<String> updatedCommentsList = List.from(place.comments); // Create a mutable copy
+      updatedCommentsList.removeWhere((element) => Comments.fromJson(element as Map<String, dynamic>) == commentToDelete);
+
+      Place updatedPlace = place.copyWith(comments: updatedCommentsList);
+
+      await DataService.putComment(updatedPlace);
+      _apiResponse = ApiResponse.completed('Sharh muvaffaqiyatli o\'chirildi!');
+      await fetchComments(place.id.toString()); // Refresh comments
+    } catch (e) {
+      _apiResponse = ApiResponse.error('Sharh o\'chirishda xatolik: ${e.toString()}');
+    } finally {
       notifyListeners();
-    } else {
-      if ((res as List<Comments>).isEmpty) {
-        _apiResponse = ApiResponse.haveNotShops("Kommentlar mavjud emas!");
-        notifyListeners();
-      } else {
-        _apiResponse = ApiResponse.haveShops(res);
-        notifyListeners();
-      }
     }
+  }
+
+  Future<void> fetchComments(String placeId) async {
+    _apiResponse = ApiResponse.loading('Sharhlar yuklanmoqda...');
+    notifyListeners();
+    try {
+      final res = await DataService.loadComments(placeId);
+      if (res is List) {
+        List<Comments> fetchedComments = (res as List)
+            .map((e) => Comments.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+        if (fetchedComments.isEmpty) {
+          _apiResponse = ApiResponse.empty("Sharhlar mavjud emas!");
+        } else {
+          _apiResponse = ApiResponse.completed(fetchedComments);
+        }
+      } else {
+        _apiResponse = ApiResponse.error('Sharhlarni yuklashda noma\'lum xatolik.');
+      }
+    } catch (e) {
+      _apiResponse = ApiResponse.error('Sharhlarni yuklashda xatolik: ${e.toString()}');
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    commentTextController.dispose();
+    super.dispose();
   }
 }

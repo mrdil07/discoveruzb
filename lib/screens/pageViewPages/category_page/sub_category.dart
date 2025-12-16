@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:discoveruzb/view_models/sub_category_vm.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:discoveruzb/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../../components/dropdown_regions.dart';
@@ -25,7 +25,7 @@ class _SubCategoryState extends State<SubCategory> {
     super.initState();
     final provider = Provider.of<SubCategoryVM>(context, listen: false);
     Future.delayed(Duration.zero).then((value) => {
-          provider.apiLoadPosts(widget.subCategoryName),
+          //provider.apiLoadPosts(widget.subCategoryName),
         });
   }
 
@@ -41,7 +41,7 @@ class _SubCategoryState extends State<SubCategory> {
           overflow: TextOverflow.ellipsis,
           style: Theme.of(context)
               .textTheme
-              .headline2
+              .displayMedium
               ?.copyWith(color: Colors.teal.shade900),
         ),
         actions: [
@@ -64,7 +64,7 @@ class _SubCategoryState extends State<SubCategory> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(10),
           physics: const ClampingScrollPhysics(),
-          controller: provider.mainController,
+          //controller: provider.mainController,
           child: Column(
             children: [
               //search
@@ -72,7 +72,7 @@ class _SubCategoryState extends State<SubCategory> {
               !provider.isLoading
                   ? GridView.builder(
                       padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                      controller: provider.subController,
+                      //controller: provider.subController,
                       shrinkWrap: true,
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
@@ -148,7 +148,7 @@ class _SubCategoryState extends State<SubCategory> {
                                       overflow: TextOverflow.ellipsis,
                                       style: Theme.of(context)
                                           .textTheme
-                                          .headline5!
+                                          .headlineMedium!
                                           .copyWith(
                                             color: Colors.white,
                                           ),
@@ -167,7 +167,7 @@ class _SubCategoryState extends State<SubCategory> {
                           child: Center(
                             child: Text(
                               AppLocalizations.of(context)!.noInfo,
-                              style: Theme.of(context).textTheme.headline5,
+                              style: Theme.of(context).textTheme.headlineMedium,
                             ),
                           ),
                         )

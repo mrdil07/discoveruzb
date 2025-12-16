@@ -4,66 +4,55 @@ import 'package:discoveruzb/screens/comment_page.dart';
 import 'package:discoveruzb/view_models/details_vm.dart';
 import 'package:discoveruzb/view_models/home_vm.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:discoveruzb/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:map_launcher/map_launcher.dart'; // Added import
+import 'package:flutter_svg/flutter_svg.dart'; // Added import
 
 import '../../../models/places_model.dart';
 import '../../../service/utils.dart';
+import '../../../widgets/hero_image.dart'; // Added import
 
-class DetailsOfPlace extends StatefulWidget {
+class DetailsOfPlace extends StatelessWidget {
   final Place place;
 
   const DetailsOfPlace({required this.place, Key? key}) : super(key: key);
 
   @override
-  State<DetailsOfPlace> createState() => _DetailsOfPlaceState();
-}
-
-class _DetailsOfPlaceState extends State<DetailsOfPlace> {
-  @override
-  void initState() {
-    final provider = Provider.of<DetailsVM>(context, listen: false);
-    super.initState();
-    Future.delayed(Duration.zero).then((value) => {
-          provider.getWeather(widget.place.lat, widget.place.lon),
-        });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<DetailsVM>(context, listen: true);
-    final providerUser = Provider.of<HomeViewModel>(context, listen: false);
+    final detailsVM = Provider.of<DetailsVM>(context, listen: true);
+    final homeVM = Provider.of<HomeViewModel>(context, listen: false);
+
+    // Fetch weather when the widget is first built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      detailsVM.fetchWeather(place.lat, place.lon);
+    });
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
-          widget.place.placeName,
+          place.placeName,
           maxLines: 2,
-          style: Theme.of(context).textTheme.headline2?.copyWith(
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 color: Colors.teal.shade700,
               ),
           overflow: TextOverflow.ellipsis,
         ),
         actions: [
-          /// °°°°°°°  °°°
           InkWell(
             onTap: () {
-              provider.getWeather(widget.place.lat, widget.place.lon);
+              detailsVM.fetchWeather(place.lat, place.lon);
             },
             child: Row(
               children: [
                 Text(
-                  "${provider.temp}°",
-                  style: Theme.of(context).textTheme.headline4,
+                  "${detailsVM.temp ?? '--'}°",
+                  style: Theme.of(context).textTheme.headlineSmall,
                 ),
-                if (provider.temp != null)
+                if (detailsVM.temp != null)
                   Image.asset(
-                    provider.temp! > 0
+                    detailsVM.temp! > 0
                         ? "assets/icons/sun.png"
                         : "assets/icons/cloudy.png",
                     scale: 2,
@@ -92,7 +81,7 @@ class _DetailsOfPlaceState extends State<DetailsOfPlace> {
             Container(
               padding: const EdgeInsets.all(10),
               child: CarouselSlider.builder(
-                  itemCount: widget.place.placeImage.length,
+                  itemCount: place.placeImage.length,
                   options: CarouselOptions(
                     height: MediaQuery.of(context).size.width / 1.2,
                     autoPlay: false,
@@ -105,13 +94,21 @@ class _DetailsOfPlaceState extends State<DetailsOfPlace> {
                       (BuildContext context, int itemIndex, int pageViewIndex) {
                     return InkWell(
                       onTap: () {
-                        provider.showImage(context, widget.place.placeImage);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (ctx) => HeroNetImage(
+                              images: place.placeImage,
+                              initialIndex: itemIndex,
+                            ),
+                          ),
+                        );
                       },
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         child: CachedNetworkImage(
                           width: MediaQuery.of(context).size.width,
-                          imageUrl: widget.place.placeImage[itemIndex],
+                          imageUrl: place.placeImage[itemIndex],
                           placeholder: (context, url) => const Center(
                             child: CircularProgressIndicator(),
                           ),
@@ -134,11 +131,11 @@ class _DetailsOfPlaceState extends State<DetailsOfPlace> {
                       Expanded(
                         flex: 4,
                         child: Text(
-                          widget.place.placeName,
+                          place.placeName,
                           maxLines: 2,
                           style: Theme.of(context)
                               .textTheme
-                              .headline2
+                              .titleLarge
                               ?.copyWith(color: Colors.teal.shade700),
                         ),
                       ),
@@ -154,66 +151,51 @@ class _DetailsOfPlaceState extends State<DetailsOfPlace> {
                                     context,
                                     MaterialPageRoute(
                                         builder: (ctx) =>
-                                            CommentPage(place: widget.place)));
+                                            CommentPage(place: place)));
                               },
                               child: Icon(
                                 Icons.comment_bank_outlined,
                                 color: Colors.tealAccent.shade700,
                               ),
                             ),
-                            Spacer(),
+                            const Spacer(),
                             InkWell(
-                                onTap: () {
-                                  if (!widget.place.liked
-                                      .contains(providerUser.userId)) {
-                                    provider.apiPostLike(
-                                        widget.place, providerUser.userId);
-                                    widget.place.likeCount++;
-                                  } else {
-                                    provider.apiPostUnLike(
-                                        widget.place, providerUser.userId);
-                                    widget.place.likeCount--;
-                                  }
-                                },
-                                child: widget.place.liked
-                                        .contains(providerUser.userId)
-                                    ? Icon(
-                                        Icons.favorite,
-                                        color: Colors.tealAccent.shade700,
-                                      )
-                                    : Icon(
-                                        Icons.favorite_border_outlined,
-                                        color: Colors.tealAccent.shade700,
-                                      )),
+                              onTap: () {
+                                detailsVM.toggleLikePost(place, homeVM.userId);
+                              },
+                              child: place.liked.contains(homeVM.userId)
+                                  ? Icon(
+                                      Icons.favorite,
+                                      color: Colors.tealAccent.shade700,
+                                    )
+                                  : Icon(
+                                      Icons.favorite_border_outlined,
+                                      color: Colors.tealAccent.shade700,
+                                    ),
+                            ),
                             //saved button
                             const Spacer(),
                             InkWell(
-                                onTap: () {
-                                  if (!widget.place.saved
-                                      .contains(providerUser.userId)) {
-                                    provider.apiPostSave(
-                                        widget.place, providerUser.userId);
-                                    Utils.fireToast(
-                                        AppLocalizations.of(context)!
-                                            .addedSaved);
-                                  } else {
-                                    provider.apiPostUnSave(
-                                        widget.place, providerUser.userId);
-                                    Utils.fireToast(
-                                        AppLocalizations.of(context)!
-                                            .removeSaved);
-                                  }
-                                },
-                                child: widget.place.saved
-                                        .contains(providerUser.userId)
-                                    ? Icon(
-                                        Icons.bookmark,
-                                        color: Colors.tealAccent.shade700,
-                                      )
-                                    : Icon(
-                                        Icons.bookmark_border_outlined,
-                                        color: Colors.tealAccent.shade700,
-                                      )),
+                              onTap: () async {
+                                await detailsVM.toggleSavePost(place, homeVM.userId);
+                                if (place.saved.contains(homeVM.userId)) {
+                                  Utils.fireToast(
+                                      AppLocalizations.of(context)!.addedSaved);
+                                } else {
+                                  Utils.fireToast(
+                                      AppLocalizations.of(context)!.removeSaved);
+                                }
+                              },
+                              child: place.saved.contains(homeVM.userId)
+                                  ? Icon(
+                                      Icons.bookmark,
+                                      color: Colors.tealAccent.shade700,
+                                    )
+                                  : Icon(
+                                      Icons.bookmark_border_outlined,
+                                      color: Colors.tealAccent.shade700,
+                                    ),
+                            ),
                           ],
                         ),
                       ),
@@ -236,9 +218,73 @@ class _DetailsOfPlaceState extends State<DetailsOfPlace> {
                       children: [
                         /// joy hududi
                         ListTile(
-                          onTap: () {
-                            provider.openMapsSheet(context, widget.place.lat,
-                                widget.place.lon, widget.place.placeName);
+                          onTap: () async {
+                            final coords = Coords(place.lat, place.lon);
+                            final title = place.placeName;
+                            final availableMaps = await MapLauncher.installedMaps;
+
+                            showModalBottomSheet(
+                              backgroundColor: Colors.transparent,
+                              barrierColor: Colors.black54.withOpacity(0.7),
+                              context: context,
+                              builder: (BuildContext context) {
+                                return SafeArea(
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(left: 15, bottom: 10),
+                                          child: Text(
+                                            'Open with',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .headlineMedium
+                                                ?.copyWith(fontSize: 25, color: Colors.white),
+                                          ),
+                                        ),
+                                        Container(
+                                          decoration: const BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.only(
+                                                  topLeft: Radius.circular(20),
+                                                  topRight: Radius.circular(20))),
+                                          alignment: Alignment.center,
+                                          child: Wrap(
+                                            children: <Widget>[
+                                              for (var map in availableMaps)
+                                                Container(
+                                                  height: 70,
+                                                  alignment: Alignment.center,
+                                                  child: ListTile(
+                                                    onTap: () => map.showMarker(
+                                                      coords: coords,
+                                                      title: title,
+                                                    ),
+                                                    title: Text(
+                                                      map.mapName,
+                                                      style: Theme.of(context).textTheme.titleLarge,
+                                                    ),
+                                                    leading: SvgPicture.asset(
+                                                      map.icon,
+                                                      height: 60.0,
+                                                      width: 60.0,
+                                                    ),
+                                                  ),
+                                                ),
+                                              const Divider(
+                                                height: 0.5,
+                                                color: Colors.grey,
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
                           },
                           leading: Icon(
                             Icons.location_on_outlined,
@@ -246,10 +292,10 @@ class _DetailsOfPlaceState extends State<DetailsOfPlace> {
                             size: 30,
                           ),
                           title: Text(
-                            widget.place.address,
+                            place.address,
                             style: Theme.of(context)
                                 .textTheme
-                                .headline4
+                                .titleMedium // Changed to titleMedium
                                 ?.copyWith(fontSize: 20, color: Colors.grey),
                           ),
                         ),
@@ -262,10 +308,10 @@ class _DetailsOfPlaceState extends State<DetailsOfPlace> {
                             size: 30,
                           ),
                           title: Text(
-                            widget.place.type,
+                            place.type,
                             style: Theme.of(context)
                                 .textTheme
-                                .headline4
+                                .titleMedium // Changed to titleMedium
                                 ?.copyWith(fontSize: 20, color: Colors.grey),
                           ),
                         ),
@@ -278,11 +324,11 @@ class _DetailsOfPlaceState extends State<DetailsOfPlace> {
                             size: 30,
                           ),
                           title: Text(
-                            '${widget.place.likeCount} ' +
+                            '${place.likeCount} ' +
                                 AppLocalizations.of(context)!.likedBy,
                             style: Theme.of(context)
                                 .textTheme
-                                .headline4
+                                .titleMedium // Changed to titleMedium
                                 ?.copyWith(fontSize: 20, color: Colors.grey),
                           ),
                         ),
@@ -292,7 +338,7 @@ class _DetailsOfPlaceState extends State<DetailsOfPlace> {
                   const SizedBox(height: 20),
                   Text(
                     AppLocalizations.of(context)!.fullInfo,
-                    style: Theme.of(context).textTheme.headline2?.copyWith(
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           color: Colors.teal.shade700,
                         ),
                   ),
@@ -304,10 +350,10 @@ class _DetailsOfPlaceState extends State<DetailsOfPlace> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            widget.place.placeInfo,
+                            place.placeInfo,
                             style: Theme.of(context)
                                 .textTheme
-                                .headline6
+                                .bodyLarge // Changed to bodyLarge
                                 ?.copyWith(
                                     letterSpacing: 1,
                                     height: 1.4,
@@ -316,10 +362,10 @@ class _DetailsOfPlaceState extends State<DetailsOfPlace> {
                           ),
                           const SizedBox(height: 10),
                           Text(
-                            'Manba: ${widget.place.source}',
+                            'Manba: ${place.source}',
                             style: Theme.of(context)
                                 .textTheme
-                                .headline4
+                                .titleMedium // Changed to titleMedium
                                 ?.copyWith(
                                     color: Colors.black,
                                     fontWeight: FontWeight.bold),
@@ -336,15 +382,79 @@ class _DetailsOfPlaceState extends State<DetailsOfPlace> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blue,
-        onPressed: () {
-          provider.openMapsSheet(context, widget.place.lat, widget.place.lon,
-              widget.place.placeName);
+        onPressed: () async {
+          final coords = Coords(place.lat, place.lon);
+          final title = place.placeName;
+          final availableMaps = await MapLauncher.installedMaps;
+
+          showModalBottomSheet(
+            backgroundColor: Colors.transparent,
+            barrierColor: Colors.black54.withOpacity(0.7),
+            context: context,
+            builder: (BuildContext context) {
+              return SafeArea(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 15, bottom: 10),
+                        child: Text(
+                          'Open with',
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineMedium
+                              ?.copyWith(fontSize: 25, color: Colors.white),
+                        ),
+                      ),
+                      Container(
+                        decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(20),
+                                topRight: Radius.circular(20))),
+                        alignment: Alignment.center,
+                        child: Wrap(
+                          children: <Widget>[
+                            for (var map in availableMaps)
+                              Container(
+                                height: 70,
+                                alignment: Alignment.center,
+                                child: ListTile(
+                                  onTap: () => map.showMarker(
+                                    coords: coords,
+                                    title: title,
+                                  ),
+                                  title: Text(
+                                    map.mapName,
+                                    style: Theme.of(context).textTheme.titleLarge,
+                                  ),
+                                  leading: SvgPicture.asset(
+                                    map.icon,
+                                    height: 60.0,
+                                    width: 60.0,
+                                  ),
+                                ),
+                              ),
+                            const Divider(
+                              height: 0.5,
+                              color: Colors.grey,
+                            )
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
         },
         child: Text(
           "GO",
           style: Theme.of(context)
               .textTheme
-              .headline5
+              .headlineMedium
               ?.copyWith(color: Colors.white),
         ),
       ),

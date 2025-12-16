@@ -1,4 +1,5 @@
 List<String> regions = [
+  "Manzil hududi",
   "Toshkent",
   "Andijon",
   "Namangan",

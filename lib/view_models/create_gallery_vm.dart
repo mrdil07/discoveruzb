@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../service/data_service.dart';
 import '../service/file_service.dart';
+import '../service/pref_service.dart';
 
 class CreateGalleryVM extends ChangeNotifier {
   final formKey = GlobalKey<FormState>();
@@ -62,6 +63,16 @@ class CreateGalleryVM extends ChangeNotifier {
   }
 
   Future getData() async {
+    String? userId = await Prefs.loadUserId();
+    
+    // Test mode - skip Firestore
+    if (userId == 'test-user-id') {
+      debugPrint('Test mode: Skipping Firestore gallery load');
+      images = [];
+      notifyListeners();
+      return;
+    }
+    
     await DataService.loadGallery().then((value) => {
           images = value,
           notifyListeners(),

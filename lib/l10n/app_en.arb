@@ -76,5 +76,10 @@
    "verifySMS":"SMS code confirmation",
    "smsAuto":"The SMS code will be checked automatically",
    "verifyPhone":"Phone Number: ",
-   "reSend":"Resend a request"
+   "reSend":"Resend a request",
+   "searchPlaceholder": "Search places...",
+   "noDataFound": "No data found",
+   "verifyPhoneNumber": "Verify Phone Number",
+   "enterVerificationCode": "Enter verification code",
+   "resendSms": "Resend SMS"
 }

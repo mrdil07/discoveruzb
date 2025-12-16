@@ -18,7 +18,10 @@ class DataService {
 
   //user related
   static Future storeUser(Users users) async {
-    users.uid = (await Prefs.loadUserId())!;
+    String? uid = (await Prefs.loadUserId());
+    if (uid != null) {
+      users = users.copyWith(uid: uid); // Update uid using copyWith
+    }
     return _firestore
         .collection(folderUsers)
         .doc(users.uid)

@@ -1,42 +1,22 @@
-class Users {
-  String uid = "";
-  String fullname = "";
-  String phoneNumber = '';
-  String email = "";
-  String password = "";
-  String imgUrl = '';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:flutter/foundation.dart';
 
-  String device_id = "";
-  String device_type = "";
-  String device_token = "";
+part 'users_model.freezed.dart';
+part 'users_model.g.dart';
 
-  Users({required this.fullname, required this.phoneNumber, this.imgUrl = ''});
+@freezed
+class Users with _$Users {
+  const factory Users({
+    @Default('') String uid,
+    required String fullname,
+    required String phoneNumber,
+    @Default('') String email,
+    @Default('') String password, 
+    @Default('') String imgUrl,
+    @Default('') String device_id,
+    @Default('') String device_type,
+    @Default('') String device_token,
+  }) = _Users;
 
-  Users.fromJson(Map<String, dynamic> json)
-      : uid = json['uid'],
-        fullname = json['fullname'],
-        email = json['email'],
-        password = json['password'],
-        imgUrl = json['imgUrl'],
-        device_id = json['device_id'],
-        device_type = json['device_type'],
-        device_token = json['device_token'],
-        phoneNumber = json['phoneNumber'];
-
-  Map<String, dynamic> toJson() => {
-        'uid': uid,
-        'fullname': fullname,
-        'email': email,
-        'password': password,
-        'imgUrl': imgUrl,
-        'device_id': device_id,
-        'device_type': device_type,
-        'device_token': device_token,
-        'phoneNumber': phoneNumber,
-      };
-
-  @override
-  bool operator ==(other) {
-    return (other is Users) && other.uid == uid;
-  }
+  factory Users.fromJson(Map<String, dynamic> json) => _$UsersFromJson(json);
 }

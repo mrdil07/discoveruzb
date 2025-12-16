@@ -36,9 +36,8 @@ void editProfileScreen(BuildContext context) {
               const SizedBox(height: 30),
               TextButton(
                   style: TextButton.styleFrom(
-                      minimumSize: Size(200, 45),
+                      foregroundColor: Colors.white, minimumSize: Size(200, 45),
                       backgroundColor: Colors.blue,
-                      primary: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       )),

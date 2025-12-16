@@ -2,37 +2,30 @@ import 'package:discoveruzb/view_models/comment_vm.dart';
 import 'package:discoveruzb/widgets/custom_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
+import '../models/comments.dart';
 import '../models/places_model.dart';
 import '../service/api_response.dart';
-import 'components/home_header.dart';
+import '../view_models/home_vm.dart'; // Import HomeViewModel
+import 'components/home_header.dart'; // Import CircularProfileImg
 
-class CommentPage extends StatefulWidget {
+class CommentPage extends StatelessWidget {
   final Place place;
   const CommentPage({Key? key, required this.place}) : super(key: key);
 
   @override
-  State<CommentPage> createState() => _CommentPageState();
-}
-
-class _CommentPageState extends State<CommentPage> {
-  @override
-  void initState() {
-    final provider = Provider.of<CommentVM>(context, listen: false);
-    super.initState();
-    Future.delayed(Duration.zero).then((value) => {
-          provider.getComments(widget.place.id.toString()),
-        });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<CommentVM>(context, listen: false);
+    // Fetch comments when the page is first built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<CommentVM>(context, listen: false).fetchComments(place.id.toString());
+    });
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
           "Fikrlar",
-          style: Theme.of(context).textTheme.headline3,
+          style: Theme.of(context).textTheme.titleLarge,
         ),
       ),
       body: Column(
@@ -42,108 +35,122 @@ class _CommentPageState extends State<CommentPage> {
               onTap: () {
                 FocusScope.of(context).requestFocus(FocusNode());
               },
-              child: Consumer<CommentVM>(builder: (context, data, child) {
-                if (data.response.status == Status.HAVESHOPS) {
-                  print("have");
+              child: Consumer<CommentVM>(builder: (context, commentVM, child) {
+                if (commentVM.response.status == Status.LOADING) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (commentVM.response.status == Status.ERROR) {
+                  return Center(
+                    child: Text(
+                      commentVM.response.message!,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  );
+                } else if (commentVM.response.status == Status.EMPTY) {
+                  return Center(
+                    child: Text(
+                      commentVM.response.message!,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  );
+                } else if (commentVM.response.status == Status.COMPLETED) {
+                  List<Comments> comments = commentVM.response.data as List<Comments>;
                   return ListView.separated(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 5, vertical: 15),
-                    itemCount: data.response.data.length,
-                    itemBuilder: (ctx, index) => Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const CircularProfileImg(width: 55, height: 55),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              RichText(
-                                maxLines: 10,
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                        text:
-                                            "${data.response.data[index].users['fullname']} ",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headline4
-                                            ?.copyWith(
-                                                color: Colors.black,
-                                                fontWeight: FontWeight.bold)),
-                                    TextSpan(
-                                        text: data.response.data[index].comment,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headline4
-                                            ?.copyWith(
-                                                color: Colors.black87,
-                                                fontWeight: FontWeight.w400)),
-                                  ],
+                    itemCount: comments.length,
+                    itemBuilder: (ctx, index) {
+                      Comments comment = comments[index];
+                      // Format date from timestamp
+                      String formattedDate = DateFormat('dd.MM.yyyy').format(DateTime.fromMillisecondsSinceEpoch(comment.dateTime));
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Using CircularProfileImg which is defined in home_header.dart
+                          CircularProfileImg(width: 55, height: 55, imageUrl: comment.users['imgUrl'] ?? ''),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                RichText(
+                                  maxLines: 10,
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                          text:
+                                              "${comment.users['fullname']} ",
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium
+                                              ?.copyWith(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.bold)),
+                                      TextSpan(
+                                          text: comment.comment,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium
+                                              ?.copyWith(
+                                                  color: Colors.black87,
+                                                  fontWeight: FontWeight.w400)),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                "12.12.2021",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headline6
-                                    ?.copyWith(
-                                        color: Colors.black87,
-                                        fontWeight: FontWeight.w400),
-                              ),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
+                                Text(
+                                  formattedDate,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall // Changed to bodySmall
+                                      ?.copyWith(
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.w400),
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      );
+                    },
                     separatorBuilder: (ctx, index) => const Divider(
                       color: Colors.transparent,
                     ),
                   );
-                } else if (data.response.status == Status.ERROR) {
-                  print("error");
-                  return Center(
-                    child: Text(
-                      data.response.message!,
-                      style: Theme.of(context).textTheme.headline4,
-                    ),
-                  );
-                } else if (data.response.status == Status.HAVENOTSHOPS) {
-                  print("yoq");
-                  return Center(
-                    child: Text(
-                      data.response.message!,
-                      style: Theme.of(context).textTheme.headline4,
-                    ),
-                  );
                 } else {
-                  print("loading");
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
+                  return const SizedBox.shrink(); // Default case for initial or other states
                 }
               }),
             ),
           ),
-          CustomTextField(
-            hintText: "Fikr qoldiring",
-            controller: provider.commentTextController,
-            onPressed: () async {
-              if (provider.comment.isNotEmpty) {
-                await provider.sendComment(widget.place, context);
-              } else {
-                print("boshhhhshshs");
-              }
+          // Comment input field
+          Consumer<HomeViewModel>( // To get user data for adding comment
+            builder: (context, homeVM, child) {
+              return CustomTextField(
+                hintText: "Fikr qoldiring",
+                controller: Provider.of<CommentVM>(context, listen: false).commentTextController,
+                onChanged: (text) {
+                  Provider.of<CommentVM>(context, listen: false).updateCommentText(text);
+                },
+                onPressed: () async {
+                  final commentVM = Provider.of<CommentVM>(context, listen: false);
+                  if (commentVM.comment.isNotEmpty) {
+                    await commentVM.addCommentToPlace(
+                      place,
+                      homeVM.fullName,
+                      homeVM.phone,
+                      homeVM.imgUrl,
+                    );
+                  } else {
+                    // Optionally show a message to the user that comment cannot be empty
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Sharh bo\'sh bo\'lishi mumkin emas!')),
+                    );
+                  }
+                },
+              );
             },
-          )
+          ),
         ],
       ),
     );
   }
-
-  // @override
-  // void deactivate() {
-  //   final provider = Provider.of<CommentVM>(context, listen: false);
-  //   super.deactivate();
-  // }
 }

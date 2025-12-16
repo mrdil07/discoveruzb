@@ -37,22 +37,14 @@ class Prefs {
     return prefs.remove('phone');
   }
 
-  /// familya
-  // static Future<bool> saveFam(String? fam) async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   print("fam $fam");
-  //   return prefs.setString('fam', fam!);
-  // }
-  //
-  // static Future<String?> loadFam() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   String? fam = prefs.getString('fam');
-  //   print("fam $fam");
-  //   return fam;
-  // }
-  //
-  // static Future<bool> removeFam() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   return prefs.remove('fam');
-  // }
+  /// fullname
+  static Future<bool> saveFullname(String fullname) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setString('fullname', fullname);
+  }
+
+  static Future<String?> loadFullname() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('fullname');
+  }
 }

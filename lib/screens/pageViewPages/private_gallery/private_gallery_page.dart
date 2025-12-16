@@ -32,7 +32,7 @@ class _MediaPageState extends State<MediaPage> {
           appBar: AppBar(
             title: Text(
               'Shaxsiy Galleriya',
-              style: Theme.of(context).textTheme.headline4,
+              style: Theme.of(context).textTheme.headlineLarge,
             ),
             actions: [
               IconButton(
@@ -114,7 +114,7 @@ class _MediaPageState extends State<MediaPage> {
                                     bottom: Radius.circular(5))),
                             child: Text(
                               provider.images[index].placeName,
-                              style: Theme.of(context).textTheme.headline4,
+                              style: Theme.of(context).textTheme.headlineLarge,
                               textAlign: TextAlign.start,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,

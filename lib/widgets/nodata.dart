@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:discoveruzb/l10n/app_localizations.dart';
 
 class NoData extends StatelessWidget {
   const NoData({Key? key}) : super(key: key);
@@ -12,7 +12,7 @@ class NoData extends StatelessWidget {
         child: Center(
           child: Text(
             AppLocalizations.of(context)!.noInfo,
-            style: Theme.of(context).textTheme.headline5,
+            style: Theme.of(context).textTheme.headlineMedium,
           ),
         ));
   }

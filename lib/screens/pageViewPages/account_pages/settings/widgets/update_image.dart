@@ -55,7 +55,7 @@ Widget updateImage(BuildContext context, {bool isEditPage = false}) {
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     onPressed: () {
-                      provider.showPicker(context);
+                      //provider.showPicker(context);
                     },
                     child: const Icon(
                       Icons.add_circle,

@@ -32,7 +32,7 @@ class _GalleryDetailState extends State<GalleryDetail> {
       appBar: AppBar(
         title: Text(
           widget.placeName,
-          style: Theme.of(context).textTheme.headline4,
+          style: Theme.of(context).textTheme.headlineLarge,
         ),
       ),
       body: GridView.builder(
