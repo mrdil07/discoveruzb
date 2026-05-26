@@ -25,7 +25,21 @@ class Place with _$Place {
     @Default(0) int likeCount,
     required double lat,
     required double lon,
+    // Sprint 9: tashqi xarita place ID lari.
+    // Admin tomonidan kiritiladi; mobile shu ID'lar orqali
+    // backend'dan external reviewlarni so'raydi.
+    @JsonKey(name: 'google_place_id') String? googlePlaceId,
+    @JsonKey(name: 'yandex_place_id') String? yandexPlaceId,
+    @JsonKey(name: 'gis_place_id') String? gisPlaceId,
   }) = _Place;
 
   factory Place.fromJson(Map<String, dynamic> json) => _$PlaceFromJson(json);
+}
+
+extension PlaceX on Place {
+  /// Tashqi xarita reviewlari mavjudligini ko'rsatuvchi flag.
+  bool get hasExternalReviews =>
+      (googlePlaceId?.isNotEmpty ?? false) ||
+      (yandexPlaceId?.isNotEmpty ?? false) ||
+      (gisPlaceId?.isNotEmpty ?? false);
 }

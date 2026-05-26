@@ -1,43 +1,107 @@
 import 'package:flutter/material.dart';
 import 'package:discoveruzb/l10n/app_localizations.dart';
 
+import '../../constants/colors.dart';
 import '../famouses.dart';
 
+/// Section title with optional "Hammasi" link button.
+///
+/// Modern Material 3: section header pattern (Apple HIG / Material 3).
 class TitleName extends StatelessWidget {
   final String? headerName;
-  const TitleName({Key? key, this.headerName}) : super(key: key);
+  final String? subtitle;
+  final VoidCallback? onSeeAll;
+  final bool hideSeeAll;
+
+  const TitleName({
+    super.key,
+    this.headerName,
+    this.subtitle,
+    this.onSeeAll,
+    this.hideSeeAll = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.sm,
+      ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            headerName ?? '',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context)
-                .textTheme
-                .headlineSmall // Changed to headlineSmall
-                ?.copyWith(color: Colors.tealAccent.shade700),
-          ),
-          Expanded(child: Container()),
-          TextButton(
-            onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (builder) => const FamousPlace()));
-            },
-            child: Text(
-              AppLocalizations.of(context)!.all,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                  fontWeight: FontWeight.normal,
-                  color: Colors.tealAccent.shade400,
-                  fontSize: 20), // Changed to titleMedium
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  headerName ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                    letterSpacing: -0.3,
+                    height: 1.2,
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
+          if (!hideSeeAll)
+            TextButton(
+              onPressed: onSeeAll ??
+                  () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const FamousPlace(),
+                        ),
+                      ),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.all,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  const Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 16,
+                    color: AppColors.primary,
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );

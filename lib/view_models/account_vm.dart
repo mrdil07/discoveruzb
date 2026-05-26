@@ -39,6 +39,9 @@ class AccountViewModel extends ChangeNotifier {
   String? _phone = '';
   String? get phone => _phone;
 
+  bool _isAdmin = false;
+  bool get isAdmin => _isAdmin;
+
   String? _error;
   String? get error => _error;
 
@@ -106,19 +109,21 @@ class AccountViewModel extends ChangeNotifier {
       if (userId == 'test-user-id') {
         debugPrint('Test mode: Loading local user profile');
         _fullName = await Prefs.loadFullname() ?? 'Test User';
-        _phone = await Prefs.loadPhone() ?? '+998911490349';
+        _phone = await Prefs.loadPhone() ?? '';
         _email = '';
         _imgUrl = '';
+        _isAdmin = false;
         notifyListeners();
         _setLoading(false);
         return;
       }
-      
+
       Users user = await DataService.loadUser();
       _fullName = user.fullname;
       _email = user.email;
       _imgUrl = user.imgUrl;
       _phone = user.phoneNumber;
+      _isAdmin = user.isAdmin;
       notifyListeners();
     } catch (e) {
       _setError('Foydalanuvchi ma\'lumotlarini yuklashda xatolik: ${e.toString()}');
@@ -173,11 +178,10 @@ class AccountViewModel extends ChangeNotifier {
         return;
       }
 
-      if (_phone == '+998911490349') {
-        _places = await DataService.loadPosts();
-      } else {
-        _places = await DataService.loadLiked();
-      }
+      // Admin barcha postlarni ko'radi, oddiy user — faqat layklarni.
+      // Admin moderatsiyasi admin panelda — mobile'da admin ham faqat
+      // o'z layklari va saqlanganlarini ko'radi.
+      _places = await DataService.loadLiked();
     } catch (e) {
       _setError('Mening postlarimni yuklashda xatolik: ${e.toString()}');
     } finally {
@@ -209,12 +213,18 @@ class AccountViewModel extends ChangeNotifier {
 
   Future<void> deletePost(Place place) async {
     _setLoading(true);
-    clearError(); // Use public clearError
+    clearError();
+    final id = place.id;
+    if (id == null) {
+      _setError('Post ID topilmadi');
+      _setLoading(false);
+      return;
+    }
     try {
-      await DataService.removePost(place, place.id);
-      _places.removeWhere((p) => p.id == place.id);
+      await DataService.removePost(id);
+      _places.removeWhere((p) => p.id == id);
       notifyListeners();
-      await fetchMyPosts(); // Refresh the list after deletion
+      await fetchMyPosts();
     } catch (e) {
       _setError('Postni o\'chirishda xatolik: ${e.toString()}');
     } finally {

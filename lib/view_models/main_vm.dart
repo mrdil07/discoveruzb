@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../service/pref_service.dart';
 
+/// Main shell tab boshqaruvi.
+///
+/// `IndexedStack` ishlatilgani uchun `PageController` kerak emas —
+/// shunchaki `_currentPage` indeksi bilan ishlaymiz.
 class MainViewModel extends ChangeNotifier {
   int _currentPage = 0;
   int get currentPage => _currentPage;
 
-  final PageController pageController = PageController();
   String? uid;
   String? _error;
   String? get error => _error;
@@ -23,7 +26,7 @@ class MainViewModel extends ChangeNotifier {
   Future<void> loadUser() async {
     _clearError();
     try {
-      String? userId = await Prefs.loadUserId();
+      final userId = await Prefs.loadUserId();
       uid = userId;
       notifyListeners();
     } catch (e) {
@@ -31,21 +34,9 @@ class MainViewModel extends ChangeNotifier {
     }
   }
 
-  void onPageChanged(int index) {
-    _currentPage = index;
-    notifyListeners();
-  }
-
   void onTap(int index) {
+    if (_currentPage == index) return;
     _currentPage = index;
-    pageController.animateToPage(_currentPage,
-        duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
     notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    pageController.dispose();
-    super.dispose();
   }
 }

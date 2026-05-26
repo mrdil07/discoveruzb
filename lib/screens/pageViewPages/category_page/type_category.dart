@@ -1,93 +1,210 @@
 import 'package:discoveruzb/screens/pageViewPages/category_page/sub_category.dart';
 import 'package:flutter/material.dart';
 
+import '../../../constants/colors.dart';
 import '../../../constants/data_sources.dart';
 import '../../../models/types_model.dart';
 
-class TypeOfPlaces extends StatefulWidget {
-  const TypeOfPlaces({Key? key}) : super(key: key);
+/// Modern explore page — kategoriyalar grid (Booking pattern).
+class TypeOfPlaces extends StatelessWidget {
+  const TypeOfPlaces({super.key});
 
-  @override
-  State<TypeOfPlaces> createState() => _TypeOfPlacesState();
-}
-
-class _TypeOfPlacesState extends State<TypeOfPlaces> {
-  List<Types> categName = [
+  static final List<Types> _categories = [
     Types(typeName: 'Sanatoriya', image: ''),
     Types(typeName: 'Mehmonxona', image: ''),
     Types(typeName: 'Dacha', image: ''),
     Types(typeName: 'Dam olish maskanlari', image: ''),
-    Types(typeName: "Cho'milish havzalari ", image: ''),
+    Types(typeName: "Cho'milish havzalari", image: ''),
     Types(typeName: "Istirohat bog'i", image: ''),
     Types(typeName: 'Boshqalar', image: ''),
-    Types(typeName: 'Sanatoriya', image: ''),
+    Types(typeName: 'Tarixiy joylar', image: ''),
   ];
-  // List<Map<String, String>> cateqgName = [
-  //   {"Sanatoriya": AppLocalizations.of(context)!.sanatoriya},
-  //   {"Mehmonxona": AppLocalizations.of(context)!.hotel},
-  //   {"Dacha": AppLocalizations.of(context)!.dacha},
-  //   {"Dam olish maskanlari": AppLocalizations.of(context)!.damOlish},
-  //   {"Cho'milish havzalari": AppLocalizations.of(context)!.basseyn},
-  //   {"Boshqalar": AppLocalizations.of(context)!.boshqalar}
-  // ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       body: SafeArea(
-        top: true,
-        bottom: true,
-        child: categName.isNotEmpty
-            ? ListView.builder(
-                itemCount: categImage.length,
-                itemBuilder: (ctx, index) => InkWell(
-                  onTap: () {
-                    Navigator.push(
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            // ─── Header ───
+            const SliverToBoxAdapter(child: _Header()),
+
+            // ─── Grid ───
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.sm,
+                AppSpacing.lg,
+                AppSpacing.xxl,
+              ),
+              sliver: SliverGrid(
+                gridDelegate:
+                    const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 1.1,
+                  crossAxisSpacing: AppSpacing.md,
+                  mainAxisSpacing: AppSpacing.md,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final cat = _categories[index];
+                    final img = index < categImage.length
+                        ? categImage[index]
+                        : categImage[index % categImage.length];
+                    return _CategoryCard(
+                      name: cat.typeName,
+                      imageAsset: img,
+                      onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (ctx) => SubCategory(
-                                  subCategoryName: categName[index].typeName,
-                                )));
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(
-                        vertical: 15, horizontal: 20),
-                    alignment: Alignment.bottomLeft,
-                    height: MediaQuery.of(context).size.width / 3,
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.blueGrey.withOpacity(0.4),
-                          spreadRadius: 2,
-                          blurRadius: 2,
-                          offset: const Offset(0, 4),
-                        )
-                      ],
-                      image: DecorationImage(
-                          image: AssetImage(categImage[index]),
-                          fit: BoxFit.cover),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Container(
-                      margin: const EdgeInsets.all(20),
-                      decoration: const BoxDecoration(
-                          gradient: LinearGradient(colors: [
-                        Colors.black54,
-                        Colors.black54,
-                        Colors.black87
-                      ], begin: Alignment.center, end: Alignment.bottomCenter)),
-                      child: Text(
-                        categName[index].typeName,
-                        style:
-                            const TextStyle(fontSize: 25, color: Colors.white),
+                          builder: (_) => SubCategory(
+                            subCategoryName: cat.typeName,
+                          ),
+                        ),
                       ),
-                    ),
+                    );
+                  },
+                  childCount: _categories.length,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  const _Header();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.base,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Qidiruv',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Kategoriya bo\'yicha joylarni tanlang',
+            style: TextStyle(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CategoryCard extends StatelessWidget {
+  final String name;
+  final String imageAsset;
+  final VoidCallback onTap;
+
+  const _CategoryCard({
+    required this.name,
+    required this.imageAsset,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(AppRadius.lg),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            boxShadow: AppShadows.card,
+          ),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Background image
+              Image.asset(
+                imageAsset,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  color: AppColors.surfaceVariant,
+                ),
+              ),
+              // Gradient overlay
+              const Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: AppColors.heroGradient,
                   ),
                 ),
-              )
-            : Center(
-                child: CircularProgressIndicator(),
               ),
+              // Title
+              Positioned(
+                left: AppSpacing.md,
+                right: AppSpacing.md,
+                bottom: AppSpacing.md,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          height: 1.25,
+                          shadows: [
+                            Shadow(
+                              color: Color(0x80000000),
+                              blurRadius: 6,
+                              offset: Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.95),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 14,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

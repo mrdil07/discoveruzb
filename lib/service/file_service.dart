@@ -1,46 +1,50 @@
 import 'dart:io';
 
-import 'package:discoveruzb/service/pref_service.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:dio/dio.dart';
+import 'package:path/path.dart' as p;
 
+import 'api_client.dart';
+
+/// Backend upload endpoint'lari bilan ishlaydigan service.
+///
+/// Endpointlar (`backend/app/api/v1/upload.py` — Sprint 4'da):
+/// - `POST /uploads/avatar`        (`multipart`)
+/// - `POST /uploads/post-image`
+/// - `POST /uploads/gallery-image`
+///
+/// Backend MinIO ga yuklab, public URL'ni qaytaradi.
 class FileService {
-  static final Reference _storage = FirebaseStorage.instance.ref();
-  static const String folderUserImg = "user_image";
-  static const String folderPostImg = "post_image";
-  static const String folderGallery = "gallery";
+  FileService._();
 
-  static Future<List<String>> uploadFiles(
-      List<File> _images, String folder) async {
-    var imageUrls =
-        await Future.wait(_images.map((_image) => uploadFile(_image, folder)));
-    return imageUrls;
+  static final _api = ApiClient.instance;
+
+  // Folder konvensiyalari (backend ham bir xil ishlatadi)
+  static const String folderUserImg = 'avatar';
+  static const String folderPostImg = 'post-image';
+  static const String folderGallery = 'gallery-image';
+
+  /// Bitta faylni yuklab, public URL qaytaradi.
+  static Future<String> uploadFile(File file, String folder) async {
+    final fileName = p.basename(file.path);
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(file.path, filename: fileName),
+    });
+
+    final response = await _api.dio.post<Map<String, dynamic>>(
+      '/uploads/$folder',
+      data: formData,
+      options: Options(
+        contentType: 'multipart/form-data',
+      ),
+    );
+    return response.data!['url'] as String;
   }
 
-  // static Future<String> uploadFile(File _image) async {
-  //   String? id = await Prefs.loadUserId();
-  //   Reference storageReference = FirebaseStorage.instance
-  //       .ref()
-  //       .child('posts/' + id.toString() + DateTime.now().toString());
-  //   UploadTask uploadTask = storageReference.putFile(_image);
-  //   await uploadTask;
-  //
-  //   return await storageReference.getDownloadURL();
-  // }
-
-  static Future<String> uploadFile(File image, String folder) async {
-    /// image name
-    String? uid = await Prefs.loadUserId();
-    String imgProfileName = uid!;
-
-    /// rasm uchun nom 1-holat
-    String imgName = "image_${DateTime.now()}";
-
-    /// rasm uchun nom berilyapti 2-holat
-    Reference storageRef = _storage.child(folder).child(
-        imgName); //firebase storage bolimida papka ochib(nomi folder ning qiymatiga teng), rasm(nomi imgName qiymatiga teng)ni joylashtiradi.
-    UploadTask uploadTask = storageRef.putFile(image);
-    TaskSnapshot taskSnapshot = await uploadTask;
-    final String downloadUrl = await taskSnapshot.ref.getDownloadURL();
-    return downloadUrl;
+  /// Bir necha faylni parallel yuklab, URL ro'yxatini qaytaradi.
+  static Future<List<String>> uploadFiles(
+    List<File> files,
+    String folder,
+  ) async {
+    return Future.wait(files.map((f) => uploadFile(f, folder)));
   }
 }

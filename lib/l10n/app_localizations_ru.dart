@@ -261,4 +261,68 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get resendSms => 'Resend SMS';
+
+  @override
+  String get appTagline => 'Откройте Узбекистан';
+
+  @override
+  String get telegramHint => 'Код подтверждения будет отправлен через Telegram';
+
+  @override
+  String get phoneIncomplete => 'Номер телефона не заполнен';
+
+  @override
+  String get orDivider => 'или';
+
+  @override
+  String get signInWithGoogle => 'Войти через Google';
+
+  @override
+  String get googleSignInError => 'Ошибка входа через Google';
+
+  @override
+  String get phoneNumberNotFound => 'Номер телефона не найден';
+
+  @override
+  String get timeExpired => 'Время истекло';
+
+  @override
+  String get enterYourInfo => 'Введите ваши данные';
+
+  @override
+  String get registerProfileHint => 'Укажите имя и фамилию для вашего профиля';
+
+  @override
+  String get firstName => 'Имя';
+
+  @override
+  String get lastName => 'Фамилия';
+
+  @override
+  String get firstNameRequired => 'Введите имя';
+
+  @override
+  String get lastNameRequired => 'Введите фамилию';
+
+  @override
+  String get next => 'Продолжить';
+
+  @override
+  String get createdBy => 'Создано MrDil';
+
+  @override
+  String get externalReviewsTitle => 'Отзывы с внешних карт';
+
+  @override
+  String get externalReviewsEmpty => 'На этом источнике нет отзывов';
+
+  @override
+  String externalReviewsCount(String count) {
+    return '$count отзывов';
+  }
+
+  @override
+  String externalReviewsMore(String count) {
+    return '+$count ещё...';
+  }
 }

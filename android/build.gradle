@@ -1,16 +1,7 @@
-buildscript {
-    ext.kotlin_version = '2.1.0'
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.gms:google-services:4.4.0'
-    }
-}
+// Yangi Flutter Android format'da `buildscript` va `plugins` blokini
+// `settings.gradle`'ga ko'chirildi (Gradle 8+).
+//
+// Bu fayl faqat repositories va clean task uchun.
 
 allprojects {
     repositories {
@@ -19,12 +10,12 @@ allprojects {
     }
 }
 
-rootProject.buildDir = '../build'
+rootProject.buildDir = "../build"
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
 subprojects {
-    project.evaluationDependsOn(':app')
+    project.evaluationDependsOn(":app")
 }
 
 tasks.register("clean", Delete) {

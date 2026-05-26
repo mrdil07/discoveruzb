@@ -47,3 +47,23 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Secrets — hech qachon kommit qilinmasin (docs/security-rules.md)
+.env
+.env.*
+!.env.example
+secrets/
+*.keystore
+*.jks
+key.properties
+android/key.properties
+ios/Runner/GoogleService-Info.plist
+android/app/google-services.json
+
+# Run scripts containing secrets
+run_app.command
+run_dev.sh
+run_prod.sh
+
+# Local dev runtime data (MinIO storage, etc.)
+.local/

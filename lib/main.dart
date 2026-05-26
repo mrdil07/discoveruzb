@@ -4,6 +4,7 @@ import 'package:discoveruzb/view_models/account_vm.dart';
 import 'package:discoveruzb/view_models/comment_vm.dart';
 import 'package:discoveruzb/view_models/create_gallery_vm.dart';
 import 'package:discoveruzb/view_models/details_vm.dart';
+import 'package:discoveruzb/view_models/external_reviews_vm.dart';
 import 'package:discoveruzb/view_models/home_vm.dart';
 import 'package:discoveruzb/view_models/login_vm.dart';
 import 'package:discoveruzb/view_models/main_vm.dart';
@@ -13,8 +14,6 @@ import 'package:discoveruzb/view_models/registration_vm.dart';
 import 'package:discoveruzb/view_models/search_vm.dart';
 import 'package:discoveruzb/view_models/splash_vm.dart';
 import 'package:discoveruzb/view_models/sub_category_vm.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -23,13 +22,13 @@ import 'package:provider/provider.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   await Hive.openBox('person');
   await Hive.openBox('restore');
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // NOTE: Supabase init 2026-05-10 da olib tashlandi —
+  // backend (FastAPI) bilan ishlash uchun `ApiClient` ishlatiladi
+  // (`lib/service/api_client.dart`).
   runApp(
     MultiProvider(
       providers: [
@@ -39,6 +38,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AccountViewModel()),
         ChangeNotifierProvider(create: (_) => SubCategoryVM()),
         ChangeNotifierProvider(create: (_) => DetailsVM()),
+        ChangeNotifierProvider(create: (_) => ExternalReviewsVM()),
         ChangeNotifierProvider(create: (_) => CommentVM()),
         ChangeNotifierProvider(create: (_) => CreateGalleryVM()),
         ChangeNotifierProvider(create: (_) => SplashViewModel()),

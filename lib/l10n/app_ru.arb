@@ -76,5 +76,33 @@
   "verifySMS":"Подтверждение смс-кода",
   "smsAuto":"SMS-код будет проверен автоматически",
   "verifyPhone":"Номер телефона: ",
-  "reSend":"Отправить запрос повторно"
+  "reSend":"Отправить запрос повторно",
+
+  "appTagline": "Откройте Узбекистан",
+  "telegramHint": "Код подтверждения будет отправлен через Telegram",
+  "phoneIncomplete": "Номер телефона не заполнен",
+  "orDivider": "или",
+  "signInWithGoogle": "Войти через Google",
+  "googleSignInError": "Ошибка входа через Google",
+  "phoneNumberNotFound": "Номер телефона не найден",
+  "timeExpired": "Время истекло",
+  "enterYourInfo": "Введите ваши данные",
+  "registerProfileHint": "Укажите имя и фамилию для вашего профиля",
+  "firstName": "Имя",
+  "lastName": "Фамилия",
+  "firstNameRequired": "Введите имя",
+  "lastNameRequired": "Введите фамилию",
+  "next": "Продолжить",
+  "createdBy": "Создано MrDil",
+
+  "externalReviewsTitle": "Отзывы с внешних карт",
+  "externalReviewsEmpty": "На этом источнике нет отзывов",
+  "externalReviewsCount": "{count} отзывов",
+  "@externalReviewsCount": {
+    "placeholders": { "count": { "type": "String" } }
+  },
+  "externalReviewsMore": "+{count} ещё...",
+  "@externalReviewsMore": {
+    "placeholders": { "count": { "type": "String" } }
+  }
 }

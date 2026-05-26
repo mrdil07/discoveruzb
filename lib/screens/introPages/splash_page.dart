@@ -6,73 +6,107 @@ import 'package:provider/provider.dart';
 
 import '../pageViewPages/main_screen.dart';
 
-class SplashPage extends StatelessWidget {
+class SplashPage extends StatefulWidget {
   const SplashPage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    // Start checking user session after the widget is built
+  State<SplashPage> createState() => _SplashPageState();
+}
+
+class _SplashPageState extends State<SplashPage> {
+  bool _navigated = false;
+
+  @override
+  void initState() {
+    super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<SplashViewModel>(context, listen: false).checkUserSession();
     });
+  }
 
+  void _maybeNavigate(SplashViewModel vm) {
+    if (vm.isLoading || _navigated) return;
+    _navigated = true;
+    final target = vm.isLoggedIn
+        ? const MainPage()
+        : const LoginWithPhone();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => target),
+        (route) => false,
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: Colors.blue,
-      body: SafeArea(
-        bottom: true,
-        top: true,
-        child: Container(
-          padding: EdgeInsets.fromLTRB(
-              5, MediaQuery.of(context).size.height / 10, 5, 20),
-          width: MediaQuery.of(context).size.width,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color.fromRGBO(12, 143, 204, 1),
-                Color.fromRGBO(12, 191, 204, 1),
-              ],
-            ),
+      backgroundColor: const Color.fromRGBO(12, 191, 204, 1),
+      resizeToAvoidBottomInset: false,
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color.fromRGBO(12, 143, 204, 1),
+              Color.fromRGBO(12, 191, 204, 1),
+            ],
           ),
+        ),
+        child: SafeArea(
           child: Consumer<SplashViewModel>(
-            builder: (context, splashViewModel, child) {
-              // Navigate based on session status after loading is complete
-              if (!splashViewModel.isLoading) {
-                if (splashViewModel.isLoggedIn) {
-                  Future.microtask(() => Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (builder) => const MainPage()),
-                        (Route<dynamic> route) => false,
-                      ));
-                } else {
-                  Future.microtask(() => Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (builder) => const LoginWithPhone()),
-                        (Route<dynamic> route) => false,
-                      ));
-                }
-              }
-
-              // Display splash screen content while loading or navigating
+            builder: (context, vm, child) {
+              _maybeNavigate(vm);
               return Column(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        AppLocalizations.of(context)!.discoverUz,
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                  const Spacer(),
+                  Container(
+                    width: 96,
+                    height: 96,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.15),
+                          blurRadius: 30,
+                          offset: const Offset(0, 12),
                         ),
-                        textAlign: TextAlign.center,
-                      ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.travel_explore_outlined,
+                      size: 52,
+                      color: Colors.teal.shade500,
                     ),
                   ),
+                  const SizedBox(height: 24),
                   Text(
-                    'Created by MrDil',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white),
+                    l10n.discoverUz,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const Spacer(),
+                  if (vm.isLoading)
+                    const CircularProgressIndicator(
+                      color: Colors.white,
+                    ),
+                  const SizedBox(height: 32),
+                  Text(
+                    l10n.createdBy,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.8),
+                        ),
                   ),
                 ],
               );

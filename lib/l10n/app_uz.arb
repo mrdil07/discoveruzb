@@ -76,5 +76,33 @@
   "verifySMS":"SMS kodni tasdiqlash",
   "smsAuto":"SMS kod avtomatik tekshiriladi",
   "verifyPhone":"Telefon raqam: ",
-  "reSend":"Qaytadan so'rov yuborish"
+  "reSend":"Qaytadan so'rov yuborish",
+
+  "appTagline": "O'zbekistonni kashf eting",
+  "telegramHint": "Telegram orqali tasdiq kodi yuboriladi",
+  "phoneIncomplete": "Telefon raqami to'liq emas",
+  "orDivider": "yoki",
+  "signInWithGoogle": "Google bilan kirish",
+  "googleSignInError": "Google bilan kirishda xatolik",
+  "phoneNumberNotFound": "Telefon raqami topilmadi",
+  "timeExpired": "Vaqt tugadi",
+  "enterYourInfo": "Ma'lumotlaringizni kiriting",
+  "registerProfileHint": "Profilingiz uchun ism va familiyangizni yozing",
+  "firstName": "Ism",
+  "lastName": "Familiya",
+  "firstNameRequired": "Ismingizni kiriting",
+  "lastNameRequired": "Familiyangizni kiriting",
+  "next": "Davom etish",
+  "createdBy": "Created by MrDil",
+
+  "externalReviewsTitle": "Tashqi xaritalardan sharhlar",
+  "externalReviewsEmpty": "Bu manbada sharhlar yo'q",
+  "externalReviewsCount": "{count} sharh",
+  "@externalReviewsCount": {
+    "placeholders": { "count": { "type": "String" } }
+  },
+  "externalReviewsMore": "+{count} ta yana...",
+  "@externalReviewsMore": {
+    "placeholders": { "count": { "type": "String" } }
+  }
 }

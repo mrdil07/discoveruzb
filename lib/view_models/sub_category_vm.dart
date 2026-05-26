@@ -24,7 +24,7 @@ class SubCategoryVM extends ChangeNotifier {
     _setLoading(true);
     _clearError();
     try {
-      _subCategory = await DataService.loadFeedsNew(subCatName);
+      _subCategory = await DataService.loadFeedsByType(subCatName);
     } catch (e) {
       _setError(e.toString());
     } finally {
@@ -34,14 +34,17 @@ class SubCategoryVM extends ChangeNotifier {
 
   Future<void> fetchPostsByCategoryAndRegion(String subCatName) async {
     if (_selectedRegion == 'Manzil hududi') {
-      // Fetch all posts if no region is selected
       await fetchPostsByCategory(subCatName);
       return;
     }
     _setLoading(true);
     _clearError();
     try {
-      _subCategory = await DataService.loadFeedLocation(subCatName, _selectedRegion);
+      // Backend `address` filter'i bor — TODO: Sprint 4'da
+      // `loadFeedsByType(type, address: ...)` kengaytirilsin.
+      // Hozircha kategoriya bo'yicha yuklab, mahalliy filter:
+      final all = await DataService.loadFeedsByType(subCatName);
+      _subCategory = all.where((p) => p.address.contains(_selectedRegion)).toList();
     } catch (e) {
       _setError(e.toString());
     } finally {

@@ -1,221 +1,544 @@
-import 'package:discoveruzb/screens/pageViewPages/account_pages/settings/widgets/edit_profile_screen.dart';
-import 'package:discoveruzb/screens/pageViewPages/account_pages/settings/widgets/list_tile_widget.dart';
-import 'package:discoveruzb/screens/pageViewPages/account_pages/settings/widgets/update_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:discoveruzb/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../constants/colors.dart';
 import '../../../../service/auth_service.dart';
 import '../../../../service/pref_service.dart';
 import '../../../../view_models/account_vm.dart';
-import '../../../introPages/login_with_phone.dart';
 
+/// Modern settings page — grouped tiles + logout.
 class SettingsPage extends StatelessWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+  const SettingsPage({super.key});
 
-  // A separate function for showing the logout confirmation dialog
-  void _showLogOutLabel(BuildContext context) {
+  void _showLogoutDialog(BuildContext context) {
     showDialog(
-        context: context,
-        builder: (ctx) {
-          return AlertDialog(
-            title: Text(
-              AppLocalizations.of(context)!.exit,
-              style: Theme.of(context).textTheme.titleLarge, // Updated style
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+        ),
+        title: const Text(
+          'Chiqishni xohlaysizmi?',
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: const Text(
+          'Tizimdan chiqasiz. Qaytadan kirish uchun OTP kerak bo\'ladi.',
+          style: TextStyle(
+            fontSize: 14,
+            color: AppColors.textSecondary,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Bekor qilish'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.error,
             ),
-            actionsAlignment: MainAxisAlignment.spaceAround,
-            actions: [
-              TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text(
-                    AppLocalizations.of(context)!.cancel,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium // Updated style
-                        ?.copyWith(color: Colors.green, fontSize: 20),
-                  )),
-              TextButton(
-                  onPressed: () async {
-                    AuthService.signOutUser(context);
-                    await Prefs.removePhone();
-                    Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                            builder: (ctx) => const LoginWithPhone()),
-                        (route) => false);
-                  },
-                  child: Text(
-                    AppLocalizations.of(context)!.continu,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium // Updated style
-                        ?.copyWith(color: Colors.red, fontSize: 20),
-                  )),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await Prefs.removePhone();
+              await Prefs.removeUserId();
+              if (!context.mounted) return;
+              await AuthService.instance.signOut(context);
+            },
+            child: const Text('Chiqish'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLanguageSheet(BuildContext context) {
+    _showOptionsSheet(context, 'Tilni tanlang', const [
+      _Option('uz', 'O\'zbekcha', '🇺🇿'),
+      _Option('ru', 'Русский', '🇷🇺'),
+      _Option('en', 'English', '🇬🇧'),
+    ]);
+  }
+
+  void _showOptionsSheet(
+    BuildContext context,
+    String title,
+    List<_Option> options,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.borderStrong,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              ...options.map(
+                (o) => ListTile(
+                  leading: Text(
+                    o.emoji,
+                    style: const TextStyle(fontSize: 24),
+                  ),
+                  title: Text(
+                    o.label,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  onTap: () => Navigator.pop(ctx),
+                ),
+              ),
             ],
-          );
-        });
-  }
-
-  void _dialogLang(BuildContext context) {
-    showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-              title: const Text('Tilni tanlang'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  TextButton(onPressed: () {}, child: const Text('Uzbek')),
-                  TextButton(onPressed: () {}, child: const Text('Russian')),
-                  TextButton(onPressed: () {}, child: const Text('English'))
-                ],
-              ),
-            ));
-  }
-
-  void _dialogCurrency(BuildContext context) {
-    showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-              title: const Text('Valyutani tanlang'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  TextButton(onPressed: () {}, child: const Text('So\'m')),
-                  TextButton(onPressed: () {}, child: const Text('Dollar')),
-                ],
-              ),
-            ));
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Initialize ViewModel methods after the widget is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final accountVM = Provider.of<AccountViewModel>(context, listen: false);
-      accountVM.fetchUserProfile();
-      accountVM.fetchMyPosts(); // Assuming this is needed on settings page too
+      Provider.of<AccountViewModel>(context, listen: false).fetchUserProfile();
     });
 
-    final accountVM = Provider.of<AccountViewModel>(context, listen: true);
     return Scaffold(
-      resizeToAvoidBottomInset: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(
-        title: Text(
-          'Settings',
-          style: Theme.of(context).textTheme.titleLarge, // Updated style
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Consumer<AccountViewModel>(
+          builder: (context, vm, _) {
+            return CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                // ─── App bar ───
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.base,
+                      AppSpacing.base,
+                      AppSpacing.lg,
+                      AppSpacing.sm,
+                    ),
+                    child: Row(
+                      children: [
+                        Material(
+                          color: AppColors.surface,
+                          shape: const CircleBorder(),
+                          child: InkWell(
+                            customBorder: const CircleBorder(),
+                            onTap: () => Navigator.pop(context),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: AppColors.border),
+                              ),
+                              child: const Icon(
+                                Icons.arrow_back_rounded,
+                                size: 20,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        const Text(
+                          'Sozlamalar',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.textPrimary,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // ─── Profile card ───
+                SliverToBoxAdapter(
+                  child: _ProfileCard(vm: vm),
+                ),
+
+                // ─── Group: Tilim ─── (kelajakda haqiqiy sozlamalar)
+                SliverToBoxAdapter(
+                  child: _SettingsGroup(
+                    title: 'Asosiy',
+                    items: [
+                      _SettingItem(
+                        icon: Icons.language_outlined,
+                        iconBg: AppColors.primarySurface,
+                        iconColor: AppColors.primary,
+                        title: 'Til',
+                        trailing: 'O\'zbekcha 🇺🇿',
+                        onTap: () => _showLanguageSheet(context),
+                      ),
+                      _SettingItem(
+                        icon: Icons.dark_mode_outlined,
+                        iconBg: AppColors.accentSurface,
+                        iconColor: AppColors.accent,
+                        title: 'Tema',
+                        trailing: 'Yorug\'',
+                        onTap: () {},
+                      ),
+                      _SettingItem(
+                        icon: Icons.notifications_outlined,
+                        iconBg: AppColors.terracottaSurface,
+                        iconColor: AppColors.terracotta,
+                        title: 'Bildirishnomalar',
+                        trailing: 'Yoqilgan',
+                        onTap: () {},
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ─── Group: Hisob ───
+                SliverToBoxAdapter(
+                  child: _SettingsGroup(
+                    title: 'Hisob',
+                    items: [
+                      _SettingItem(
+                        icon: Icons.person_outline_rounded,
+                        iconBg: AppColors.primarySurface,
+                        iconColor: AppColors.primary,
+                        title: 'Profil tahrirlash',
+                        onTap: () {},
+                      ),
+                      _SettingItem(
+                        icon: Icons.shield_outlined,
+                        iconBg: const Color(0xFFE0F0FF),
+                        iconColor: AppColors.info,
+                        title: 'Maxfiylik',
+                        onTap: () {},
+                      ),
+                      _SettingItem(
+                        icon: Icons.help_outline_rounded,
+                        iconBg: const Color(0xFFF0F0F4),
+                        iconColor: AppColors.textSecondary,
+                        title: 'Yordam',
+                        onTap: () {},
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ─── Logout ───
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.lg,
+                      AppSpacing.lg,
+                      AppSpacing.lg,
+                      AppSpacing.xxl,
+                    ),
+                    child: Material(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(AppRadius.lg),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                        onTap: () => _showLogoutDialog(context),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.base,
+                            vertical: AppSpacing.base,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(AppRadius.lg),
+                            border: Border.all(
+                              color: AppColors.error.withValues(alpha: 0.2),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: AppColors.error.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.logout_rounded,
+                                  size: 20,
+                                  color: AppColors.error,
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.md),
+                              const Expanded(
+                                child: Text(
+                                  'Tizimdan chiqish',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.error,
+                                  ),
+                                ),
+                              ),
+                              const Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                size: 14,
+                                color: AppColors.error,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
-      body: Container(
-        padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-        width: double.infinity,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            updateImage(context), // This widget might need refactoring too
-            const SizedBox(height: 20),
-            Text(accountVM.fullName,
-                style: Theme.of(context).textTheme.headlineMedium), // Updated style
-            const SizedBox(height: 10),
-            TextButton(
-              onPressed: () {
-                editProfileScreen(context);
-              },
-              style: TextButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white, // Changed to foregroundColor
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 15,
-                  ),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20))),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Profil Tahrirlash',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium // Updated style
-                        ?.copyWith(color: Colors.white, fontSize: 19),
-                  ),
-                  const SizedBox(width: 10),
-                  const Icon(
-                    Icons.arrow_forward_ios_outlined,
-                    size: 25,
+    );
+  }
+}
+
+class _Option {
+  final String key;
+  final String label;
+  final String emoji;
+  const _Option(this.key, this.label, this.emoji);
+}
+
+class _ProfileCard extends StatelessWidget {
+  final AccountViewModel vm;
+  const _ProfileCard({required this.vm});
+
+  @override
+  Widget build(BuildContext context) {
+    final initial = vm.fullName.isNotEmpty ? vm.fullName[0].toUpperCase() : '?';
+    return Container(
+      margin: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.sm,
+        AppSpacing.lg,
+        AppSpacing.sm,
+      ),
+      padding: const EdgeInsets.all(AppSpacing.base),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        boxShadow: AppShadows.sm,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: AppColors.primarySurface,
+              shape: BoxShape.circle,
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: vm.imgUrl.isNotEmpty
+                ? CachedNetworkImage(
+                    imageUrl: vm.imgUrl,
+                    fit: BoxFit.cover,
+                    errorWidget: (_, __, ___) => Center(
+                      child: Text(
+                        initial,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
                   )
-                ],
-              ),
-            ),
-            Container(
-              alignment: Alignment.centerLeft,
-              padding: const EdgeInsets.only(left: 15.0, right: 15, top: 30),
-              child: Text(
-                "Qo'shimcha imkoniyatlar",
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineMedium // Updated style
-                    ?.copyWith(color: Colors.grey),
-                textAlign: TextAlign.start,
-              ),
-            ),
-            Container(
-              alignment: Alignment.centerLeft,
-              child: Column(
-                children: [
-                  InkWell(
-                      onTap: () {
-                        _dialogLang(context);
-                      },
-                      child: ListTile1(
-                        title: 'Til',
-                        titleIcon: Icons.language_outlined,
-                        suffixText: 'English',
-                        icon: Icons.arrow_forward_ios_outlined,
-                      )),
-                  InkWell(
-                      onTap: () {
-                        _dialogCurrency(context);
-                      },
-                      child: ListTile1(
-                        title: 'Valyuta',
-                        titleIcon: Icons.currency_exchange_rounded,
-                        suffixText: 'Dollar',
-                        icon: Icons.arrow_forward_ios_outlined,
-                      )),
-                   ListTile1(
-                    title: 'Orqa fon',
-                    titleIcon: Icons.light_mode,
-                    suffixText: 'Light',
+                : Center(
+                    child: Text(
+                      initial,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
+                    ),
                   ),
-                ],
-              ),
-            ),
-            Expanded(
-                child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
+          ),
+          const SizedBox(width: AppSpacing.base),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ListTile(
-                  title: Text(
-                    'Logout',
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineMedium // Updated style
-                        ?.copyWith(color: Colors.black54),
+                Text(
+                  vm.fullName.isEmpty ? '...' : vm.fullName,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
                   ),
-                  leading: const Icon(Icons.logout),
-                  onTap: () {
-                    _showLogOutLabel(context);
-                  },
-                )
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  vm.phone ?? vm.email,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
-            ))
-          ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SettingsGroup extends StatelessWidget {
+  final String title;
+  final List<Widget> items;
+  const _SettingsGroup({required this.title, required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.base,
+        AppSpacing.lg,
+        AppSpacing.sm,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(
+              left: AppSpacing.sm,
+              bottom: AppSpacing.sm,
+            ),
+            child: Text(
+              title.toUpperCase(),
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textTertiary,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              boxShadow: AppShadows.sm,
+            ),
+            child: Column(children: items),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SettingItem extends StatelessWidget {
+  final IconData icon;
+  final Color iconBg;
+  final Color iconColor;
+  final String title;
+  final String? trailing;
+  final VoidCallback onTap;
+
+  const _SettingItem({
+    required this.icon,
+    required this.iconBg,
+    required this.iconColor,
+    required this.title,
+    this.trailing,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.base,
+            vertical: AppSpacing.md,
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                ),
+                child: Icon(icon, size: 18, color: iconColor),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              if (trailing != null) ...[
+                Text(
+                  trailing!,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: 6),
+              ],
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 14,
+                color: AppColors.textTertiary,
+              ),
+            ],
+          ),
         ),
       ),
     );

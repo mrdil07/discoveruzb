@@ -260,4 +260,69 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get resendSms => 'Resend SMS';
+
+  @override
+  String get appTagline => 'Discover Uzbekistan';
+
+  @override
+  String get telegramHint => 'A verification code will be sent via Telegram';
+
+  @override
+  String get phoneIncomplete => 'Phone number is incomplete';
+
+  @override
+  String get orDivider => 'or';
+
+  @override
+  String get signInWithGoogle => 'Sign in with Google';
+
+  @override
+  String get googleSignInError => 'Google sign-in failed';
+
+  @override
+  String get phoneNumberNotFound => 'Phone number not found';
+
+  @override
+  String get timeExpired => 'Time expired';
+
+  @override
+  String get enterYourInfo => 'Enter your details';
+
+  @override
+  String get registerProfileHint =>
+      'Provide your first and last name for your profile';
+
+  @override
+  String get firstName => 'First name';
+
+  @override
+  String get lastName => 'Last name';
+
+  @override
+  String get firstNameRequired => 'Enter your first name';
+
+  @override
+  String get lastNameRequired => 'Enter your last name';
+
+  @override
+  String get next => 'Continue';
+
+  @override
+  String get createdBy => 'Created by MrDil';
+
+  @override
+  String get externalReviewsTitle => 'Reviews from external maps';
+
+  @override
+  String get externalReviewsEmpty => 'No reviews from this source';
+
+  @override
+  String externalReviewsCount(String count) {
+    return '$count reviews';
+  }
+
+  @override
+  String externalReviewsMore(String count) {
+    return '+$count more...';
+  }
 }

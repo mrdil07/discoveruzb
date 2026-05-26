@@ -23,33 +23,25 @@ class CommentVM extends ChangeNotifier {
   }
 
   Future<void> addCommentToPlace(
-      Place place,
-      String fullname,
-      String? phoneNumber,
-      String imgUrl,
-      ) async {
+    Place place,
+    String fullname,
+    String? phoneNumber,
+    String imgUrl,
+  ) async {
+    final id = place.id;
+    if (id == null) {
+      _apiResponse = ApiResponse.error('Post topilmadi');
+      notifyListeners();
+      return;
+    }
     _apiResponse = ApiResponse.loading('Sharh qo\'shilmoqda...');
     notifyListeners();
     try {
-      final newComment = Comments(
-        users: {
-          "fullname": fullname,
-          "phoneNumber": phoneNumber ?? '',
-          "imgUrl": imgUrl,
-        },
-        comment: _comment,
-        dateTime: DateTime.now().millisecondsSinceEpoch,
-      );
-      List<String> updatedCommentsList = List.from(place.comments); // Create a mutable copy
-      updatedCommentsList.add(newComment.toJson().toString()); // Add the new comment as a string representation of its JSON
-
-      Place updatedPlace = place.copyWith(comments: updatedCommentsList);
-
-      await DataService.putComment(updatedPlace);
+      await DataService.addComment(id, _comment);
       commentTextController.clear();
       _comment = '';
       _apiResponse = ApiResponse.completed('Sharh muvaffaqiyatli qo\'shildi!');
-      await fetchComments(place.id.toString()); // Refresh comments
+      await fetchComments(id);
     } catch (e) {
       _apiResponse = ApiResponse.error('Sharh qo\'shishda xatolik: ${e.toString()}');
     } finally {
@@ -57,41 +49,25 @@ class CommentVM extends ChangeNotifier {
     }
   }
 
+  /// Backend RPC: `DELETE /comments/{comment_id}`.
+  ///
+  /// TODO Sprint 4: backendda comment'ning egasi/admini bo'lish tekshiruvi.
   Future<void> deleteCommentFromPlace(Place place, Comments commentToDelete) async {
-    _apiResponse = ApiResponse.loading('Sharh o\'chirilmoqda...');
+    // Hozircha mobile-da comment delete UI yo'q — admin panelda bo'ladi.
+    // ViewModel signaturasini saqlab qo'yamiz.
+    _apiResponse = ApiResponse.error('Sharh o\'chirish admin panelda mavjud');
     notifyListeners();
-    try {
-      List<String> updatedCommentsList = List.from(place.comments); // Create a mutable copy
-      updatedCommentsList.removeWhere((element) => Comments.fromJson(element as Map<String, dynamic>) == commentToDelete);
-
-      Place updatedPlace = place.copyWith(comments: updatedCommentsList);
-
-      await DataService.putComment(updatedPlace);
-      _apiResponse = ApiResponse.completed('Sharh muvaffaqiyatli o\'chirildi!');
-      await fetchComments(place.id.toString()); // Refresh comments
-    } catch (e) {
-      _apiResponse = ApiResponse.error('Sharh o\'chirishda xatolik: ${e.toString()}');
-    } finally {
-      notifyListeners();
-    }
   }
 
   Future<void> fetchComments(String placeId) async {
     _apiResponse = ApiResponse.loading('Sharhlar yuklanmoqda...');
     notifyListeners();
     try {
-      final res = await DataService.loadComments(placeId);
-      if (res is List) {
-        List<Comments> fetchedComments = (res as List)
-            .map((e) => Comments.fromJson(Map<String, dynamic>.from(e)))
-            .toList();
-        if (fetchedComments.isEmpty) {
-          _apiResponse = ApiResponse.empty("Sharhlar mavjud emas!");
-        } else {
-          _apiResponse = ApiResponse.completed(fetchedComments);
-        }
+      final fetchedComments = await DataService.loadComments(placeId);
+      if (fetchedComments.isEmpty) {
+        _apiResponse = ApiResponse.empty("Sharhlar mavjud emas!");
       } else {
-        _apiResponse = ApiResponse.error('Sharhlarni yuklashda noma\'lum xatolik.');
+        _apiResponse = ApiResponse.completed(fetchedComments);
       }
     } catch (e) {
       _apiResponse = ApiResponse.error('Sharhlarni yuklashda xatolik: ${e.toString()}');

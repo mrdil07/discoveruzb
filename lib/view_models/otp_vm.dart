@@ -1,17 +1,26 @@
 import 'dart:async';
-import 'dart:io';
 
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../service/auth_service.dart';
 import '../service/pref_service.dart';
 
+/// OTP oqimi — backend `/auth/telegram/*` endpoint'lar bilan ishlaydi.
+///
+/// Hujjatlar:
+/// - `backend/app/api/v1/auth.py` — `telegram/send-otp`, `telegram/verify-otp`.
+/// - Telegram Gateway: https://core.telegram.org/gateway/api
 class OTPViewModel extends ChangeNotifier {
+  OTPViewModel({AuthService? authService})
+      : _auth = authService ?? AuthService.instance;
+
+  final AuthService _auth;
+
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  String _verificationCode = '';
   String? _error;
   String? get error => _error;
 
@@ -25,24 +34,19 @@ class OTPViewModel extends ChangeNotifier {
   final FocusNode pinPutFocusNode = FocusNode();
 
   Timer? _countdownTimer;
-  Duration _myDuration = const Duration(minutes: 3);
+  Duration _myDuration = const Duration(minutes: 5);
   Duration get myDuration => _myDuration;
 
-  // Test phone numbers for development (only works on simulators)
-  static const Map<String, String> _testPhoneNumbers = {
-    '+998911490349': '121212',
-  };
-
-  bool _isTestMode = false;
-  String _testPhoneNumber = '';
+  String _phoneNumber = '';
+  String? _requestId;
 
   void _setLoading(bool loading) {
     _isLoading = loading;
     notifyListeners();
   }
 
-  void _setError(String errorMessage) {
-    _error = errorMessage;
+  void _setError(String message) {
+    _error = message;
     notifyListeners();
   }
 
@@ -52,12 +56,15 @@ class OTPViewModel extends ChangeNotifier {
   }
 
   void startTimer() {
-    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) => _setCountDown());
+    _countdownTimer?.cancel();
+    _countdownTimer = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) => _setCountDown(),
+    );
   }
 
   void _setCountDown() {
-    const reduceSecondsBy = 1;
-    final seconds = _myDuration.inSeconds - reduceSecondsBy;
+    final seconds = _myDuration.inSeconds - 1;
     if (seconds < 0) {
       _countdownTimer?.cancel();
     } else {
@@ -73,138 +80,92 @@ class OTPViewModel extends ChangeNotifier {
 
   void resetTimer() {
     stopTimer();
-    _myDuration = const Duration(minutes: 3);
+    _myDuration = const Duration(minutes: 5);
     startTimer();
     notifyListeners();
   }
 
+  /// `LoginViewModel.sendOtp()` allaqachon OTP yuborgan bo'lsa —
+  /// shunchaki telefon raqamini saqlab, timer'ni boshlaymiz.
+  /// Qayta yuborish kerak bo'lsa `verifyPhoneNumber` ishlatiladi.
+  void attachPhone(String phoneNumber) {
+    _phoneNumber = phoneNumber;
+    if (_countdownTimer == null || !_countdownTimer!.isActive) {
+      startTimer();
+    }
+  }
+
+  /// Backend orqali OTP yuborish (Telegram Gateway).
   Future<void> verifyPhoneNumber(String phoneNumber) async {
     _setLoading(true);
     clearError();
-    _verificationCode = '';
-    _testPhoneNumber = phoneNumber;
-    
-    // Check if this is a test phone number (for iOS simulator development)
-    if (kDebugMode && _testPhoneNumbers.containsKey(phoneNumber)) {
-      debugPrint('Test mode activated for: $phoneNumber');
-      _isTestMode = true;
-      _verificationCode = 'test-verification-id';
-      startTimer();
-      _setLoading(false);
-      return;
-    }
-    
-    _isTestMode = false;
-    
+    _phoneNumber = phoneNumber;
+
     try {
-      debugPrint('Starting phone verification for: $phoneNumber');
-      await FirebaseAuth.instance.verifyPhoneNumber(
-        phoneNumber: phoneNumber,
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          debugPrint('verificationCompleted called with credential');
-          if (credential.smsCode != null) {
-            pinPutController.text = credential.smsCode!;
-          }
-          await signInWithCredential(credential);
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          debugPrint('verificationFailed: ${e.code} - ${e.message}');
-          _setError('Tasdiqlashda xatolik: ${e.message}');
-          _setLoading(false);
-        },
-        codeSent: (String verificationID, int? resendToken) {
-          debugPrint('codeSent: verificationID = $verificationID');
-          _verificationCode = verificationID;
-          startTimer();
-          _setLoading(false);
-        },
-        codeAutoRetrievalTimeout: (String verificationID) {
-          debugPrint('codeAutoRetrievalTimeout: verificationID = $verificationID');
-          if (_verificationCode.isEmpty) {
-            _verificationCode = verificationID;
-          }
-          _setLoading(false);
-        },
-        timeout: const Duration(seconds: 120),
+      final result = await _auth.sendTelegramOtp(phoneNumber);
+      _requestId = result.requestId;
+      _myDuration = Duration(seconds: result.expiresIn);
+      startTimer();
+      debugPrint('OTP yuborildi (delivery=${result.delivery})');
+    } on DioException catch (e) {
+      final message = _extractError(
+        e,
+        fallback: 'OTP yuborishda xatolik. Qaytadan urinib ko\'ring.',
       );
+      _setError(message);
     } catch (e) {
-      debugPrint('verifyPhoneNumber error: ${e.toString()}');
-      _setError('Telefon raqamini tasdiqlashda xatolik: ${e.toString()}');
+      _setError('OTP yuborishda xatolik: ${e.toString()}');
+    } finally {
       _setLoading(false);
     }
   }
 
+  /// Backend orqali OTP tekshirish va JWT olish.
   Future<void> signInWithOTP(String otp) async {
     _setLoading(true);
     clearError();
-    
-    // Test mode - simulate login for development
-    if (_isTestMode && kDebugMode) {
-      final expectedOtp = _testPhoneNumbers[_testPhoneNumber];
-      if (otp == expectedOtp) {
-        debugPrint('Test mode: OTP verified successfully');
-        // Simulate successful login
-        await Prefs.saveUserId('test-user-id');
-        await Prefs.savePhone(_testPhoneNumber);
-        _isNewUser = true; // Assume new user for test
-        _isLoggedIn = true;
-        _setLoading(false);
-        stopTimer();
-        notifyListeners();
-        return;
-      } else {
-        _setError('Noto\'g\'ri OTP kodi');
-        _setLoading(false);
-        return;
-      }
+    if (_phoneNumber.isEmpty) {
+      _setError('Telefon raqami topilmadi');
+      _setLoading(false);
+      return;
     }
-    
+
     try {
-      if (_verificationCode.isEmpty) {
-        _setError('Verification ID topilmadi. Iltimos, qaytadan urinib ko\'ring.');
-        _setLoading(false);
-        return;
+      final result = await _auth.verifyTelegramOtp(
+        phone: _phoneNumber,
+        code: otp,
+      );
+      // Bookkeeping: ba'zi ekranlar hali Prefs.userId'ga tayanadi
+      // (legacy). Sprint 5 da olib tashlanadi.
+      await Prefs.saveUserId(result.user.uid);
+      await Prefs.savePhone(_phoneNumber);
+      if (result.user.fullname.isNotEmpty &&
+          result.user.fullname != 'Foydalanuvchi') {
+        await Prefs.saveFullname(result.user.fullname);
       }
-      
-      PhoneAuthCredential credential = PhoneAuthProvider.credential(
-          verificationId: _verificationCode, smsCode: otp);
-      await signInWithCredential(credential);
+
+      // Yangi user — registration ekrani'ga; aks holda main page.
+      _isNewUser = result.user.fullname == 'Foydalanuvchi';
+      _isLoggedIn = true;
+      stopTimer();
+      notifyListeners();
+    } on DioException catch (e) {
+      final message = _extractError(e, fallback: 'OTP noto\'g\'ri');
+      _setError(message);
     } catch (e) {
       _setError('OTPni tasdiqlashda xatolik: ${e.toString()}');
+    } finally {
       _setLoading(false);
     }
   }
 
-  Future<void> signInWithCredential(PhoneAuthCredential credential) async {
-    _setLoading(true);
-    clearError();
-    try {
-      debugPrint('Attempting to sign in with credential...');
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
-      User? user = userCredential.user;
-      debugPrint('Sign in successful, user: ${user?.uid}');
-
-      if (user != null) {
-        await Prefs.saveUserId(user.uid);
-        await Prefs.savePhone(user.phoneNumber.toString());
-
-        _isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
-        _isLoggedIn = true;
-        debugPrint('User logged in, isNewUser: $_isNewUser');
-        notifyListeners();
-      } else {
-        _setError('Foydalanuvchi ma\'lumotlari topilmadi.');
-      }
-    } on FirebaseAuthException catch (e) {
-      debugPrint('FirebaseAuthException: ${e.code} - ${e.message}');
-      _setError('Kirishda xatolik: ${e.message}');
-    } catch (e) {
-      debugPrint('General error: ${e.toString()}');
-      _setError('Kirishda xatolik: ${e.toString()}');
-    } finally {
-      _setLoading(false);
-      stopTimer();
+  String _extractError(DioException e, {required String fallback}) {
+    final response = e.response;
+    if (response?.data is Map<String, dynamic>) {
+      final detail = (response!.data as Map<String, dynamic>)['detail'];
+      if (detail is String) return detail;
     }
+    return fallback;
   }
 
   @override

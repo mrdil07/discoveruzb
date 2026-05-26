@@ -1,9 +1,21 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
-import '../service/pref_service.dart';
+import '../service/api_client.dart';
+import '../service/auth_service.dart';
 
+/// Splash davrida foydalanuvchi session'ini tekshiradi:
+///   - Mahalliy JWT mavjudligini.
+///   - Token yaroqliligini (backend `/auth/me` chaqirish).
+///
+/// `isLoggedIn = true` bo'lsa, `MainPage`'ga; aks holda `LoginWithPhone`'ga.
 class SplashViewModel extends ChangeNotifier {
+  SplashViewModel({AuthService? authService})
+      : _auth = authService ?? AuthService.instance;
+
+  final AuthService _auth;
+  final _api = ApiClient.instance;
+
   bool _isLoggedIn = false;
   bool get isLoggedIn => _isLoggedIn;
 
@@ -18,8 +30,8 @@ class SplashViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _setError(String errorMessage) {
-    _error = errorMessage;
+  void _setError(String message) {
+    _error = message;
     notifyListeners();
   }
 
@@ -31,23 +43,38 @@ class SplashViewModel extends ChangeNotifier {
     _setLoading(true);
     _clearError();
     try {
-      await Future.delayed(const Duration(seconds: 3)); // Splash screen delay
+      // Minimum splash davri — UX uchun
+      final delay = Future<void>.delayed(const Duration(seconds: 2));
 
-      FirebaseAuth.instance.authStateChanges().listen((User? user) async {
-        if (user != null) {
-          _isLoggedIn = true;
-          await Prefs.saveUserId(user.uid);
-        } else {
-          _isLoggedIn = false;
-          await Prefs.removeUserId();
-        }
+      final hasToken = await _api.isAuthenticated;
+      if (!hasToken) {
+        await delay;
+        _isLoggedIn = false;
         _setLoading(false);
-        // Navigating here is not ideal for ViewModel, but for now we keep it simple.
-        // Ideally, UI should listen to _isLoggedIn and navigate.
-        // For example, using GoRouter or a similar package would be better.
-      });
+        return;
+      }
+
+      // Token bor — server tomonida yaroqligini tekshiramiz.
+      try {
+        await _auth.fetchMe();
+        _isLoggedIn = true;
+      } on DioException catch (e) {
+        // 401 — token yaroqsiz. Boshqa xato — offline bo'lsa ham
+        // logged-in deb hisoblaymiz (offline-first UX).
+        if (e.response?.statusCode == 401) {
+          await _api.clearTokens();
+          _isLoggedIn = false;
+        } else {
+          _isLoggedIn = true; // offline rejim
+        }
+      } catch (_) {
+        _isLoggedIn = true; // boshqa exception — tarmoq, parse va h.k.
+      }
+
+      await delay;
     } catch (e) {
-      _setError('Foydalanuvchi sessiyasini tekshirishda xatolik: ${e.toString()}');
+      _setError('Sessiyani tekshirishda xatolik: ${e.toString()}');
+    } finally {
       _setLoading(false);
     }
   }

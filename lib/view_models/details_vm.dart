@@ -1,13 +1,25 @@
 import 'dart:convert';
 
 import 'package:discoveruzb/models/weather_model.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/places_model.dart';
 import '../service/data_service.dart';
 
-const String apiKey = '09d7f0162c04c0035e95d2891522debf';
+/// OpenWeatherMap API key — `--dart-define` orqali beriladi:
+///
+/// ```bash
+/// flutter run --dart-define=OPENWEATHER_API_KEY=<key>
+/// ```
+///
+/// Hech qachon kalitni kodga hardcoded yozmang
+/// (`docs/security-rules.md`).
+const String _openWeatherApiKey = String.fromEnvironment(
+  'OPENWEATHER_API_KEY',
+  defaultValue: '',
+);
 
 class DetailsVM extends ChangeNotifier {
   bool _isLoading = false;
@@ -44,22 +56,17 @@ class DetailsVM extends ChangeNotifier {
     _error = null;
   }
 
+  /// Backend RPC: `POST /posts/{id}/like` — server `liked` array va
+  /// `like_count` o'zi yangilaydi (atomic, race-condition'siz).
   Future<void> toggleLikePost(Place place, String userId) async {
+    final id = place.id;
+    if (id == null) return;
     _clearError();
     try {
-      List<String> updatedLiked = List.from(place.liked); // Create a mutable copy
-      if (updatedLiked.contains(userId)) {
-        updatedLiked.remove(userId);
-      } else {
-        updatedLiked.add(userId);
-      }
-      // Update likeCount based on the updatedLiked list
-      Place updatedPlace = place.copyWith(liked: updatedLiked, likeCount: updatedLiked.length);
-      await DataService.likePost(updatedPlace);
-      // Update the place in the ViewModel's list if it's there
-      int index = _places.indexWhere((p) => p.id == updatedPlace.id);
+      final updated = await DataService.toggleLike(id);
+      final index = _places.indexWhere((p) => p.id == id);
       if (index != -1) {
-        _places[index] = updatedPlace;
+        _places[index] = updated;
       }
       notifyListeners();
     } catch (e) {
@@ -67,21 +74,16 @@ class DetailsVM extends ChangeNotifier {
     }
   }
 
+  /// Backend RPC: `POST /posts/{id}/save`.
   Future<void> toggleSavePost(Place place, String userId) async {
+    final id = place.id;
+    if (id == null) return;
     _clearError();
     try {
-      List<String> updatedSaved = List.from(place.saved); // Create a mutable copy
-      if (updatedSaved.contains(userId)) {
-        updatedSaved.remove(userId);
-      } else {
-        updatedSaved.add(userId);
-      }
-      Place updatedPlace = place.copyWith(saved: updatedSaved);
-      await DataService.savePost(updatedPlace);
-      // Update the place in the ViewModel's list if it's there
-      int index = _places.indexWhere((p) => p.id == updatedPlace.id);
+      final updated = await DataService.toggleSave(id);
+      final index = _places.indexWhere((p) => p.id == id);
       if (index != -1) {
-        _places[index] = updatedPlace;
+        _places[index] = updated;
       }
       notifyListeners();
     } catch (e) {
@@ -92,10 +94,27 @@ class DetailsVM extends ChangeNotifier {
   Future<void> fetchWeather(double lat, double lon) async {
     _setLoadingWeather(true);
     _clearError();
+    if (_openWeatherApiKey.isEmpty) {
+      debugPrint(
+        'OPENWEATHER_API_KEY berilmagan. '
+        '`--dart-define=OPENWEATHER_API_KEY=...` orqali bering.',
+      );
+      _setError('Ob-havo xizmati sozlanmagan.');
+      _setLoadingWeather(false);
+      return;
+    }
     try {
-      String url =
-          'https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lon&appid=$apiKey&units=metric';
-      var res = await http.get(Uri.parse(url));
+      final uri = Uri.https(
+        'api.openweathermap.org',
+        '/data/2.5/weather',
+        {
+          'lat': lat.toString(),
+          'lon': lon.toString(),
+          'appid': _openWeatherApiKey,
+          'units': 'metric',
+        },
+      );
+      var res = await http.get(uri);
       if (res.statusCode == 200) {
         Map<String, dynamic> map = jsonDecode(res.body);
         WeatherModel weatherModel = WeatherModel.fromJson(map);

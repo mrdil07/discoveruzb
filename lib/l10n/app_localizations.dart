@@ -597,6 +597,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Resend SMS'**
   String get resendSms;
+
+  /// No description provided for @appTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover Uzbekistan'**
+  String get appTagline;
+
+  /// No description provided for @telegramHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A verification code will be sent via Telegram'**
+  String get telegramHint;
+
+  /// No description provided for @phoneIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number is incomplete'**
+  String get phoneIncomplete;
+
+  /// No description provided for @orDivider.
+  ///
+  /// In en, this message translates to:
+  /// **'or'**
+  String get orDivider;
+
+  /// No description provided for @signInWithGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Google'**
+  String get signInWithGoogle;
+
+  /// No description provided for @googleSignInError.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-in failed'**
+  String get googleSignInError;
+
+  /// No description provided for @phoneNumberNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number not found'**
+  String get phoneNumberNotFound;
+
+  /// No description provided for @timeExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Time expired'**
+  String get timeExpired;
+
+  /// No description provided for @enterYourInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your details'**
+  String get enterYourInfo;
+
+  /// No description provided for @registerProfileHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Provide your first and last name for your profile'**
+  String get registerProfileHint;
+
+  /// No description provided for @firstName.
+  ///
+  /// In en, this message translates to:
+  /// **'First name'**
+  String get firstName;
+
+  /// No description provided for @lastName.
+  ///
+  /// In en, this message translates to:
+  /// **'Last name'**
+  String get lastName;
+
+  /// No description provided for @firstNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your first name'**
+  String get firstNameRequired;
+
+  /// No description provided for @lastNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your last name'**
+  String get lastNameRequired;
+
+  /// No description provided for @next.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get next;
+
+  /// No description provided for @createdBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Created by MrDil'**
+  String get createdBy;
+
+  /// No description provided for @externalReviewsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews from external maps'**
+  String get externalReviewsTitle;
+
+  /// No description provided for @externalReviewsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews from this source'**
+  String get externalReviewsEmpty;
+
+  /// No description provided for @externalReviewsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} reviews'**
+  String externalReviewsCount(String count);
+
+  /// No description provided for @externalReviewsMore.
+  ///
+  /// In en, this message translates to:
+  /// **'+{count} more...'**
+  String externalReviewsMore(String count);
 }
 
 class _AppLocalizationsDelegate

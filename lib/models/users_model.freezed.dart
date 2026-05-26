@@ -20,15 +20,26 @@ Users _$UsersFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Users {
+  @JsonKey(name: 'id')
   String get uid => throw _privateConstructorUsedError;
   String get fullname => throw _privateConstructorUsedError;
-  String get phoneNumber => throw _privateConstructorUsedError;
+  String get phone => throw _privateConstructorUsedError;
   String get email => throw _privateConstructorUsedError;
-  String get password => throw _privateConstructorUsedError;
-  String get imgUrl => throw _privateConstructorUsedError;
-  String get device_id => throw _privateConstructorUsedError;
-  String get device_type => throw _privateConstructorUsedError;
-  String get device_token => throw _privateConstructorUsedError;
+  @JsonKey(name: 'img_url')
+  String get imgUrl =>
+      throw _privateConstructorUsedError; // 'user' | 'moderator' | 'admin'
+  String get role => throw _privateConstructorUsedError;
+  @JsonKey(name: 'is_banned')
+  bool get isBanned => throw _privateConstructorUsedError;
+  String get language => throw _privateConstructorUsedError;
+  @JsonKey(name: 'google_sub')
+  String? get googleSub => throw _privateConstructorUsedError;
+  @JsonKey(name: 'telegram_id')
+  int? get telegramId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'last_login_at')
+  String? get lastLoginAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'created_at')
+  String? get createdAt => throw _privateConstructorUsedError;
 
   /// Serializes this Users to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -45,15 +56,18 @@ abstract class $UsersCopyWith<$Res> {
       _$UsersCopyWithImpl<$Res, Users>;
   @useResult
   $Res call(
-      {String uid,
+      {@JsonKey(name: 'id') String uid,
       String fullname,
-      String phoneNumber,
+      String phone,
       String email,
-      String password,
-      String imgUrl,
-      String device_id,
-      String device_type,
-      String device_token});
+      @JsonKey(name: 'img_url') String imgUrl,
+      String role,
+      @JsonKey(name: 'is_banned') bool isBanned,
+      String language,
+      @JsonKey(name: 'google_sub') String? googleSub,
+      @JsonKey(name: 'telegram_id') int? telegramId,
+      @JsonKey(name: 'last_login_at') String? lastLoginAt,
+      @JsonKey(name: 'created_at') String? createdAt});
 }
 
 /// @nodoc
@@ -73,13 +87,16 @@ class _$UsersCopyWithImpl<$Res, $Val extends Users>
   $Res call({
     Object? uid = null,
     Object? fullname = null,
-    Object? phoneNumber = null,
+    Object? phone = null,
     Object? email = null,
-    Object? password = null,
     Object? imgUrl = null,
-    Object? device_id = null,
-    Object? device_type = null,
-    Object? device_token = null,
+    Object? role = null,
+    Object? isBanned = null,
+    Object? language = null,
+    Object? googleSub = freezed,
+    Object? telegramId = freezed,
+    Object? lastLoginAt = freezed,
+    Object? createdAt = freezed,
   }) {
     return _then(_value.copyWith(
       uid: null == uid
@@ -90,34 +107,46 @@ class _$UsersCopyWithImpl<$Res, $Val extends Users>
           ? _value.fullname
           : fullname // ignore: cast_nullable_to_non_nullable
               as String,
-      phoneNumber: null == phoneNumber
-          ? _value.phoneNumber
-          : phoneNumber // ignore: cast_nullable_to_non_nullable
+      phone: null == phone
+          ? _value.phone
+          : phone // ignore: cast_nullable_to_non_nullable
               as String,
       email: null == email
           ? _value.email
           : email // ignore: cast_nullable_to_non_nullable
               as String,
-      password: null == password
-          ? _value.password
-          : password // ignore: cast_nullable_to_non_nullable
-              as String,
       imgUrl: null == imgUrl
           ? _value.imgUrl
           : imgUrl // ignore: cast_nullable_to_non_nullable
               as String,
-      device_id: null == device_id
-          ? _value.device_id
-          : device_id // ignore: cast_nullable_to_non_nullable
+      role: null == role
+          ? _value.role
+          : role // ignore: cast_nullable_to_non_nullable
               as String,
-      device_type: null == device_type
-          ? _value.device_type
-          : device_type // ignore: cast_nullable_to_non_nullable
+      isBanned: null == isBanned
+          ? _value.isBanned
+          : isBanned // ignore: cast_nullable_to_non_nullable
+              as bool,
+      language: null == language
+          ? _value.language
+          : language // ignore: cast_nullable_to_non_nullable
               as String,
-      device_token: null == device_token
-          ? _value.device_token
-          : device_token // ignore: cast_nullable_to_non_nullable
-              as String,
+      googleSub: freezed == googleSub
+          ? _value.googleSub
+          : googleSub // ignore: cast_nullable_to_non_nullable
+              as String?,
+      telegramId: freezed == telegramId
+          ? _value.telegramId
+          : telegramId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      lastLoginAt: freezed == lastLoginAt
+          ? _value.lastLoginAt
+          : lastLoginAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      createdAt: freezed == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -130,15 +159,18 @@ abstract class _$$UsersImplCopyWith<$Res> implements $UsersCopyWith<$Res> {
   @override
   @useResult
   $Res call(
-      {String uid,
+      {@JsonKey(name: 'id') String uid,
       String fullname,
-      String phoneNumber,
+      String phone,
       String email,
-      String password,
-      String imgUrl,
-      String device_id,
-      String device_type,
-      String device_token});
+      @JsonKey(name: 'img_url') String imgUrl,
+      String role,
+      @JsonKey(name: 'is_banned') bool isBanned,
+      String language,
+      @JsonKey(name: 'google_sub') String? googleSub,
+      @JsonKey(name: 'telegram_id') int? telegramId,
+      @JsonKey(name: 'last_login_at') String? lastLoginAt,
+      @JsonKey(name: 'created_at') String? createdAt});
 }
 
 /// @nodoc
@@ -156,13 +188,16 @@ class __$$UsersImplCopyWithImpl<$Res>
   $Res call({
     Object? uid = null,
     Object? fullname = null,
-    Object? phoneNumber = null,
+    Object? phone = null,
     Object? email = null,
-    Object? password = null,
     Object? imgUrl = null,
-    Object? device_id = null,
-    Object? device_type = null,
-    Object? device_token = null,
+    Object? role = null,
+    Object? isBanned = null,
+    Object? language = null,
+    Object? googleSub = freezed,
+    Object? telegramId = freezed,
+    Object? lastLoginAt = freezed,
+    Object? createdAt = freezed,
   }) {
     return _then(_$UsersImpl(
       uid: null == uid
@@ -173,34 +208,46 @@ class __$$UsersImplCopyWithImpl<$Res>
           ? _value.fullname
           : fullname // ignore: cast_nullable_to_non_nullable
               as String,
-      phoneNumber: null == phoneNumber
-          ? _value.phoneNumber
-          : phoneNumber // ignore: cast_nullable_to_non_nullable
+      phone: null == phone
+          ? _value.phone
+          : phone // ignore: cast_nullable_to_non_nullable
               as String,
       email: null == email
           ? _value.email
           : email // ignore: cast_nullable_to_non_nullable
               as String,
-      password: null == password
-          ? _value.password
-          : password // ignore: cast_nullable_to_non_nullable
-              as String,
       imgUrl: null == imgUrl
           ? _value.imgUrl
           : imgUrl // ignore: cast_nullable_to_non_nullable
               as String,
-      device_id: null == device_id
-          ? _value.device_id
-          : device_id // ignore: cast_nullable_to_non_nullable
+      role: null == role
+          ? _value.role
+          : role // ignore: cast_nullable_to_non_nullable
               as String,
-      device_type: null == device_type
-          ? _value.device_type
-          : device_type // ignore: cast_nullable_to_non_nullable
+      isBanned: null == isBanned
+          ? _value.isBanned
+          : isBanned // ignore: cast_nullable_to_non_nullable
+              as bool,
+      language: null == language
+          ? _value.language
+          : language // ignore: cast_nullable_to_non_nullable
               as String,
-      device_token: null == device_token
-          ? _value.device_token
-          : device_token // ignore: cast_nullable_to_non_nullable
-              as String,
+      googleSub: freezed == googleSub
+          ? _value.googleSub
+          : googleSub // ignore: cast_nullable_to_non_nullable
+              as String?,
+      telegramId: freezed == telegramId
+          ? _value.telegramId
+          : telegramId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      lastLoginAt: freezed == lastLoginAt
+          ? _value.lastLoginAt
+          : lastLoginAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      createdAt: freezed == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -209,48 +256,63 @@ class __$$UsersImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$UsersImpl with DiagnosticableTreeMixin implements _Users {
   const _$UsersImpl(
-      {this.uid = '',
-      required this.fullname,
-      required this.phoneNumber,
+      {@JsonKey(name: 'id') this.uid = '',
+      this.fullname = '',
+      this.phone = '',
       this.email = '',
-      this.password = '',
-      this.imgUrl = '',
-      this.device_id = '',
-      this.device_type = '',
-      this.device_token = ''});
+      @JsonKey(name: 'img_url') this.imgUrl = '',
+      this.role = 'user',
+      @JsonKey(name: 'is_banned') this.isBanned = false,
+      this.language = 'uz',
+      @JsonKey(name: 'google_sub') this.googleSub,
+      @JsonKey(name: 'telegram_id') this.telegramId,
+      @JsonKey(name: 'last_login_at') this.lastLoginAt,
+      @JsonKey(name: 'created_at') this.createdAt});
 
   factory _$UsersImpl.fromJson(Map<String, dynamic> json) =>
       _$$UsersImplFromJson(json);
 
   @override
-  @JsonKey()
+  @JsonKey(name: 'id')
   final String uid;
   @override
+  @JsonKey()
   final String fullname;
   @override
-  final String phoneNumber;
+  @JsonKey()
+  final String phone;
   @override
   @JsonKey()
   final String email;
   @override
-  @JsonKey()
-  final String password;
-  @override
-  @JsonKey()
+  @JsonKey(name: 'img_url')
   final String imgUrl;
+// 'user' | 'moderator' | 'admin'
   @override
   @JsonKey()
-  final String device_id;
+  final String role;
+  @override
+  @JsonKey(name: 'is_banned')
+  final bool isBanned;
   @override
   @JsonKey()
-  final String device_type;
+  final String language;
   @override
-  @JsonKey()
-  final String device_token;
+  @JsonKey(name: 'google_sub')
+  final String? googleSub;
+  @override
+  @JsonKey(name: 'telegram_id')
+  final int? telegramId;
+  @override
+  @JsonKey(name: 'last_login_at')
+  final String? lastLoginAt;
+  @override
+  @JsonKey(name: 'created_at')
+  final String? createdAt;
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'Users(uid: $uid, fullname: $fullname, phoneNumber: $phoneNumber, email: $email, password: $password, imgUrl: $imgUrl, device_id: $device_id, device_type: $device_type, device_token: $device_token)';
+    return 'Users(uid: $uid, fullname: $fullname, phone: $phone, email: $email, imgUrl: $imgUrl, role: $role, isBanned: $isBanned, language: $language, googleSub: $googleSub, telegramId: $telegramId, lastLoginAt: $lastLoginAt, createdAt: $createdAt)';
   }
 
   @override
@@ -260,13 +322,16 @@ class _$UsersImpl with DiagnosticableTreeMixin implements _Users {
       ..add(DiagnosticsProperty('type', 'Users'))
       ..add(DiagnosticsProperty('uid', uid))
       ..add(DiagnosticsProperty('fullname', fullname))
-      ..add(DiagnosticsProperty('phoneNumber', phoneNumber))
+      ..add(DiagnosticsProperty('phone', phone))
       ..add(DiagnosticsProperty('email', email))
-      ..add(DiagnosticsProperty('password', password))
       ..add(DiagnosticsProperty('imgUrl', imgUrl))
-      ..add(DiagnosticsProperty('device_id', device_id))
-      ..add(DiagnosticsProperty('device_type', device_type))
-      ..add(DiagnosticsProperty('device_token', device_token));
+      ..add(DiagnosticsProperty('role', role))
+      ..add(DiagnosticsProperty('isBanned', isBanned))
+      ..add(DiagnosticsProperty('language', language))
+      ..add(DiagnosticsProperty('googleSub', googleSub))
+      ..add(DiagnosticsProperty('telegramId', telegramId))
+      ..add(DiagnosticsProperty('lastLoginAt', lastLoginAt))
+      ..add(DiagnosticsProperty('createdAt', createdAt));
   }
 
   @override
@@ -277,24 +342,40 @@ class _$UsersImpl with DiagnosticableTreeMixin implements _Users {
             (identical(other.uid, uid) || other.uid == uid) &&
             (identical(other.fullname, fullname) ||
                 other.fullname == fullname) &&
-            (identical(other.phoneNumber, phoneNumber) ||
-                other.phoneNumber == phoneNumber) &&
+            (identical(other.phone, phone) || other.phone == phone) &&
             (identical(other.email, email) || other.email == email) &&
-            (identical(other.password, password) ||
-                other.password == password) &&
             (identical(other.imgUrl, imgUrl) || other.imgUrl == imgUrl) &&
-            (identical(other.device_id, device_id) ||
-                other.device_id == device_id) &&
-            (identical(other.device_type, device_type) ||
-                other.device_type == device_type) &&
-            (identical(other.device_token, device_token) ||
-                other.device_token == device_token));
+            (identical(other.role, role) || other.role == role) &&
+            (identical(other.isBanned, isBanned) ||
+                other.isBanned == isBanned) &&
+            (identical(other.language, language) ||
+                other.language == language) &&
+            (identical(other.googleSub, googleSub) ||
+                other.googleSub == googleSub) &&
+            (identical(other.telegramId, telegramId) ||
+                other.telegramId == telegramId) &&
+            (identical(other.lastLoginAt, lastLoginAt) ||
+                other.lastLoginAt == lastLoginAt) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, uid, fullname, phoneNumber,
-      email, password, imgUrl, device_id, device_type, device_token);
+  int get hashCode => Object.hash(
+      runtimeType,
+      uid,
+      fullname,
+      phone,
+      email,
+      imgUrl,
+      role,
+      isBanned,
+      language,
+      googleSub,
+      telegramId,
+      lastLoginAt,
+      createdAt);
 
   /// Create a copy of Users
   /// with the given fields replaced by the non-null parameter values.
@@ -314,36 +395,52 @@ class _$UsersImpl with DiagnosticableTreeMixin implements _Users {
 
 abstract class _Users implements Users {
   const factory _Users(
-      {final String uid,
-      required final String fullname,
-      required final String phoneNumber,
+      {@JsonKey(name: 'id') final String uid,
+      final String fullname,
+      final String phone,
       final String email,
-      final String password,
-      final String imgUrl,
-      final String device_id,
-      final String device_type,
-      final String device_token}) = _$UsersImpl;
+      @JsonKey(name: 'img_url') final String imgUrl,
+      final String role,
+      @JsonKey(name: 'is_banned') final bool isBanned,
+      final String language,
+      @JsonKey(name: 'google_sub') final String? googleSub,
+      @JsonKey(name: 'telegram_id') final int? telegramId,
+      @JsonKey(name: 'last_login_at') final String? lastLoginAt,
+      @JsonKey(name: 'created_at') final String? createdAt}) = _$UsersImpl;
 
   factory _Users.fromJson(Map<String, dynamic> json) = _$UsersImpl.fromJson;
 
   @override
+  @JsonKey(name: 'id')
   String get uid;
   @override
   String get fullname;
   @override
-  String get phoneNumber;
+  String get phone;
   @override
   String get email;
   @override
-  String get password;
+  @JsonKey(name: 'img_url')
+  String get imgUrl; // 'user' | 'moderator' | 'admin'
   @override
-  String get imgUrl;
+  String get role;
   @override
-  String get device_id;
+  @JsonKey(name: 'is_banned')
+  bool get isBanned;
   @override
-  String get device_type;
+  String get language;
   @override
-  String get device_token;
+  @JsonKey(name: 'google_sub')
+  String? get googleSub;
+  @override
+  @JsonKey(name: 'telegram_id')
+  int? get telegramId;
+  @override
+  @JsonKey(name: 'last_login_at')
+  String? get lastLoginAt;
+  @override
+  @JsonKey(name: 'created_at')
+  String? get createdAt;
 
   /// Create a copy of Users
   /// with the given fields replaced by the non-null parameter values.

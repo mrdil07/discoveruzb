@@ -1,182 +1,362 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:discoveruzb/view_models/sub_category_vm.dart';
 import 'package:flutter/material.dart';
-import 'package:discoveruzb/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
+import '../../../constants/colors.dart';
 import '../../components/dropdown_regions.dart';
 import '../../search_page.dart';
 import 'detailsPlace.dart';
 
-class SubCategory extends StatefulWidget {
+/// Modern category list — region dropdown + 2-column place grid.
+class SubCategory extends StatelessWidget {
   final String subCategoryName;
-
-  const SubCategory({required this.subCategoryName, Key? key})
-      : super(key: key);
-
-  @override
-  State<SubCategory> createState() => _SubCategoryState();
-}
-
-class _SubCategoryState extends State<SubCategory> {
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    final provider = Provider.of<SubCategoryVM>(context, listen: false);
-    Future.delayed(Duration.zero).then((value) => {
-          //provider.apiLoadPosts(widget.subCategoryName),
-        });
-  }
+  const SubCategory({required this.subCategoryName, super.key});
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<SubCategoryVM>(context, listen: true);
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text(
-          AppLocalizations.of(context)!.places,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: Theme.of(context)
-              .textTheme
-              .displayMedium
-              ?.copyWith(color: Colors.teal.shade900),
-        ),
-        actions: [
-          InkWell(
-            onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (ctx) => const SearchPage()));
-            },
-            child: const Icon(
-              Icons.search,
-              size: 35,
-              color: Colors.grey,
-            ),
-          ),
-          const SizedBox(width: 15)
-        ],
-      ),
+      backgroundColor: AppColors.background,
       body: SafeArea(
-        bottom: true,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(10),
-          physics: const ClampingScrollPhysics(),
-          //controller: provider.mainController,
-          child: Column(
-            children: [
-              //search
-              DropDownRegions(widget.subCategoryName),
-              !provider.isLoading
-                  ? GridView.builder(
-                      padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                      //controller: provider.subController,
-                      shrinkWrap: true,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        childAspectRatio: 1 / 1.2,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        crossAxisCount: 2,
-                      ),
-                      itemCount: provider.subCategory.length,
-                      itemBuilder: (context, index) {
-                        return Stack(
-                          children: [
-                            InkWell(
-                              splashColor: Colors.blue.withAlpha(30),
-                              hoverColor: Colors.transparent,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (ctx) => DetailsOfPlace(
-                                      place: provider.subCategory[index],
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: Container(
-                                height:
-                                    (MediaQuery.of(context).size.width) / 1.2,
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                        color: Colors.black, width: 1)),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: CachedNetworkImage(
-                                    width: MediaQuery.of(context).size.width,
-                                    imageUrl: provider
-                                        .subCategory[index].placeImage.first,
-                                    fit: BoxFit.cover,
-                                    progressIndicatorBuilder:
-                                        (context, url, downloadProgress) {
-                                      return Center(
-                                        child: CircularProgressIndicator(
-                                          value: downloadProgress.progress,
-                                          color: Colors.grey[350],
-                                          strokeWidth: 3,
-                                        ),
-                                      );
-                                    },
-                                    errorWidget: (context, url, error) => Icon(
-                                      Icons.error,
-                                      color: Colors.grey[350],
-                                    ),
-                                  ),
+        child: Consumer<SubCategoryVM>(
+          builder: (context, vm, _) {
+            return CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                // ─── Header ───
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.base,
+                      AppSpacing.base,
+                      AppSpacing.lg,
+                      AppSpacing.sm,
+                    ),
+                    child: Row(
+                      children: [
+                        _CircleIconButton(
+                          icon: Icons.arrow_back_rounded,
+                          onTap: () => Navigator.pop(context),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                subCategoryName,
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.textPrimary,
+                                  letterSpacing: -0.2,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                '${vm.subCategory.length} ta joy',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                            ),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Expanded(child: Container()),
-                                  Container(
-                                    color: Colors.black.withAlpha(150),
-                                    padding: const EdgeInsets.fromLTRB(
-                                        15, 7.5, 15, 7.5),
-                                    height: 60,
-                                    child: Text(
-                                      provider.subCategory[index].placeName,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headlineMedium!
-                                          .copyWith(
-                                            color: Colors.white,
-                                          ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    )
-                  : provider.subCategory.isEmpty
-                      ? Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Center(
-                            child: Text(
-                              AppLocalizations.of(context)!.noInfo,
-                              style: Theme.of(context).textTheme.headlineMedium,
+                            ],
+                          ),
+                        ),
+                        _CircleIconButton(
+                          icon: Icons.search_rounded,
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SearchPage(),
                             ),
                           ),
-                        )
-                      : Container(
-                          height: MediaQuery.of(context).size.height / 2,
-                          alignment: Alignment.center,
-                          child: const CircularProgressIndicator()),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // ─── Region dropdown ───
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.sm,
+                    ),
+                    child: DropDownRegions(subCategoryName),
+                  ),
+                ),
+
+                // ─── Grid ───
+                if (vm.isLoading)
+                  const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  )
+                else if (vm.subCategory.isEmpty)
+                  const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: _EmptyView(),
+                  )
+                else
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.lg,
+                      AppSpacing.sm,
+                      AppSpacing.lg,
+                      AppSpacing.xxl,
+                    ),
+                    sliver: SliverGrid(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.78,
+                        crossAxisSpacing: AppSpacing.md,
+                        mainAxisSpacing: AppSpacing.md,
+                      ),
+                      delegate: SliverChildBuilderDelegate(
+                        (context, i) {
+                          final p = vm.subCategory[i];
+                          return _PlaceCard(
+                            imageUrl: p.placeImage.isNotEmpty
+                                ? p.placeImage.first
+                                : null,
+                            title: p.placeName,
+                            address: p.address,
+                            likeCount: p.likeCount,
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => DetailsOfPlace(place: p),
+                              ),
+                            ),
+                          );
+                        },
+                        childCount: vm.subCategory.length,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _CircleIconButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _CircleIconButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.surface,
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Icon(icon, size: 20, color: AppColors.textPrimary),
+        ),
+      ),
+    );
+  }
+}
+
+class _PlaceCard extends StatelessWidget {
+  final String? imageUrl;
+  final String title;
+  final String address;
+  final int likeCount;
+  final VoidCallback onTap;
+
+  const _PlaceCard({
+    required this.imageUrl,
+    required this.title,
+    required this.address,
+    required this.likeCount,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(AppRadius.lg),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            boxShadow: AppShadows.card,
+          ),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (imageUrl != null)
+                CachedNetworkImage(
+                  imageUrl: imageUrl!,
+                  fit: BoxFit.cover,
+                  placeholder: (_, __) =>
+                      Container(color: AppColors.surfaceVariant),
+                  errorWidget: (_, __, ___) =>
+                      Container(color: AppColors.surfaceVariant),
+                )
+              else
+                Container(color: AppColors.surfaceVariant),
+              const Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: AppColors.heroGradient,
+                  ),
+                ),
+              ),
+              if (likeCount > 0)
+                Positioned(
+                  top: AppSpacing.sm,
+                  right: AppSpacing.sm,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.95),
+                      borderRadius: BorderRadius.circular(AppRadius.full),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.favorite,
+                          size: 12,
+                          color: AppColors.terracotta,
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          '$likeCount',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              Positioned(
+                left: AppSpacing.md,
+                right: AppSpacing.md,
+                bottom: AppSpacing.md,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        height: 1.25,
+                        shadows: [
+                          Shadow(
+                            color: Color(0x80000000),
+                            blurRadius: 6,
+                            offset: Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.location_on_rounded,
+                          size: 11,
+                          color: Colors.white70,
+                        ),
+                        const SizedBox(width: 2),
+                        Expanded(
+                          child: Text(
+                            address,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyView extends StatelessWidget {
+  const _EmptyView();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xxl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.search_off_outlined,
+                size: 36,
+                color: AppColors.textTertiary,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.base),
+            const Text(
+              'Bu kategoriyada joylar topilmadi',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       ),
     );

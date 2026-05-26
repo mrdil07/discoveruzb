@@ -261,4 +261,69 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get resendSms => 'Resend SMS';
+
+  @override
+  String get appTagline => 'O\'zbekistonni kashf eting';
+
+  @override
+  String get telegramHint => 'Telegram orqali tasdiq kodi yuboriladi';
+
+  @override
+  String get phoneIncomplete => 'Telefon raqami to\'liq emas';
+
+  @override
+  String get orDivider => 'yoki';
+
+  @override
+  String get signInWithGoogle => 'Google bilan kirish';
+
+  @override
+  String get googleSignInError => 'Google bilan kirishda xatolik';
+
+  @override
+  String get phoneNumberNotFound => 'Telefon raqami topilmadi';
+
+  @override
+  String get timeExpired => 'Vaqt tugadi';
+
+  @override
+  String get enterYourInfo => 'Ma\'lumotlaringizni kiriting';
+
+  @override
+  String get registerProfileHint =>
+      'Profilingiz uchun ism va familiyangizni yozing';
+
+  @override
+  String get firstName => 'Ism';
+
+  @override
+  String get lastName => 'Familiya';
+
+  @override
+  String get firstNameRequired => 'Ismingizni kiriting';
+
+  @override
+  String get lastNameRequired => 'Familiyangizni kiriting';
+
+  @override
+  String get next => 'Davom etish';
+
+  @override
+  String get createdBy => 'Created by MrDil';
+
+  @override
+  String get externalReviewsTitle => 'Tashqi xaritalardan sharhlar';
+
+  @override
+  String get externalReviewsEmpty => 'Bu manbada sharhlar yo\'q';
+
+  @override
+  String externalReviewsCount(String count) {
+    return '$count sharh';
+  }
+
+  @override
+  String externalReviewsMore(String count) {
+    return '+$count ta yana...';
+  }
 }

@@ -13,12 +13,18 @@ class GalleryDetail extends StatefulWidget {
   final int index;
   final List<dynamic> images;
   final String placeName;
-  const GalleryDetail(
-      {Key? key,
-      required this.images,
-      required this.placeName,
-      required this.index})
-      : super(key: key);
+  /// Backend `Gallery.id` (UUID). Eski Supabase versiyasidan kelgan
+  /// `index` parametri bilan birga ishlaydi — `galleryId` mavjud bo'lsa
+  /// shu ishlatiladi (Sprint 4 da `index` butunlay olib tashlanadi).
+  final String? galleryId;
+
+  const GalleryDetail({
+    Key? key,
+    required this.images,
+    required this.placeName,
+    required this.index,
+    this.galleryId,
+  }) : super(key: key);
 
   @override
   State<GalleryDetail> createState() => _GalleryDetailState();
@@ -97,13 +103,18 @@ class _GalleryDetailState extends State<GalleryDetail> {
     }
   }
 
-  Future updateImages() async {
+  Future<void> updateImages() async {
     final provider = Provider.of<CreateGalleryVM>(context, listen: false);
-    await FileService.uploadFiles(
-            provider.imagesFile, FileService.folderGallery)
-        .then((imageLink) => {
-              DataService.updateGallery(imageLink, widget.index),
-              provider.imagesFile.clear(),
-            });
+    final urls = await FileService.uploadFiles(
+      provider.imagesFile,
+      FileService.folderGallery,
+    );
+    // TODO Sprint 4: backendda `widget.index` o'rniga `gallery_id` ishlatish
+    // (gallery list backend orqali kelganida UUID id bor).
+    final galleryId = widget.galleryId;
+    if (galleryId != null) {
+      await DataService.updateGallery(galleryId, urls);
+    }
+    provider.imagesFile.clear();
   }
 }

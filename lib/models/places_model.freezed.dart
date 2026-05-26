@@ -37,7 +37,16 @@ mixin _$Place {
   List<String> get saved => throw _privateConstructorUsedError;
   int get likeCount => throw _privateConstructorUsedError;
   double get lat => throw _privateConstructorUsedError;
-  double get lon => throw _privateConstructorUsedError;
+  double get lon =>
+      throw _privateConstructorUsedError; // Sprint 9: tashqi xarita place ID lari.
+// Admin tomonidan kiritiladi; mobile shu ID'lar orqali
+// backend'dan external reviewlarni so'raydi.
+  @JsonKey(name: 'google_place_id')
+  String? get googlePlaceId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'yandex_place_id')
+  String? get yandexPlaceId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'gis_place_id')
+  String? get gisPlaceId => throw _privateConstructorUsedError;
 
   /// Serializes this Place to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -71,7 +80,10 @@ abstract class $PlaceCopyWith<$Res> {
       List<String> saved,
       int likeCount,
       double lat,
-      double lon});
+      double lon,
+      @JsonKey(name: 'google_place_id') String? googlePlaceId,
+      @JsonKey(name: 'yandex_place_id') String? yandexPlaceId,
+      @JsonKey(name: 'gis_place_id') String? gisPlaceId});
 }
 
 /// @nodoc
@@ -107,6 +119,9 @@ class _$PlaceCopyWithImpl<$Res, $Val extends Place>
     Object? likeCount = null,
     Object? lat = null,
     Object? lon = null,
+    Object? googlePlaceId = freezed,
+    Object? yandexPlaceId = freezed,
+    Object? gisPlaceId = freezed,
   }) {
     return _then(_value.copyWith(
       uid: freezed == uid
@@ -181,6 +196,18 @@ class _$PlaceCopyWithImpl<$Res, $Val extends Place>
           ? _value.lon
           : lon // ignore: cast_nullable_to_non_nullable
               as double,
+      googlePlaceId: freezed == googlePlaceId
+          ? _value.googlePlaceId
+          : googlePlaceId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      yandexPlaceId: freezed == yandexPlaceId
+          ? _value.yandexPlaceId
+          : yandexPlaceId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      gisPlaceId: freezed == gisPlaceId
+          ? _value.gisPlaceId
+          : gisPlaceId // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -210,7 +237,10 @@ abstract class _$$PlaceImplCopyWith<$Res> implements $PlaceCopyWith<$Res> {
       List<String> saved,
       int likeCount,
       double lat,
-      double lon});
+      double lon,
+      @JsonKey(name: 'google_place_id') String? googlePlaceId,
+      @JsonKey(name: 'yandex_place_id') String? yandexPlaceId,
+      @JsonKey(name: 'gis_place_id') String? gisPlaceId});
 }
 
 /// @nodoc
@@ -244,6 +274,9 @@ class __$$PlaceImplCopyWithImpl<$Res>
     Object? likeCount = null,
     Object? lat = null,
     Object? lon = null,
+    Object? googlePlaceId = freezed,
+    Object? yandexPlaceId = freezed,
+    Object? gisPlaceId = freezed,
   }) {
     return _then(_$PlaceImpl(
       uid: freezed == uid
@@ -318,6 +351,18 @@ class __$$PlaceImplCopyWithImpl<$Res>
           ? _value.lon
           : lon // ignore: cast_nullable_to_non_nullable
               as double,
+      googlePlaceId: freezed == googlePlaceId
+          ? _value.googlePlaceId
+          : googlePlaceId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      yandexPlaceId: freezed == yandexPlaceId
+          ? _value.yandexPlaceId
+          : yandexPlaceId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      gisPlaceId: freezed == gisPlaceId
+          ? _value.gisPlaceId
+          : gisPlaceId // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -343,7 +388,10 @@ class _$PlaceImpl with DiagnosticableTreeMixin implements _Place {
       final List<String> saved = const [],
       this.likeCount = 0,
       required this.lat,
-      required this.lon})
+      required this.lon,
+      @JsonKey(name: 'google_place_id') this.googlePlaceId,
+      @JsonKey(name: 'yandex_place_id') this.yandexPlaceId,
+      @JsonKey(name: 'gis_place_id') this.gisPlaceId})
       : _placeImage = placeImage,
         _phoneNumber = phoneNumber,
         _comments = comments,
@@ -423,10 +471,22 @@ class _$PlaceImpl with DiagnosticableTreeMixin implements _Place {
   final double lat;
   @override
   final double lon;
+// Sprint 9: tashqi xarita place ID lari.
+// Admin tomonidan kiritiladi; mobile shu ID'lar orqali
+// backend'dan external reviewlarni so'raydi.
+  @override
+  @JsonKey(name: 'google_place_id')
+  final String? googlePlaceId;
+  @override
+  @JsonKey(name: 'yandex_place_id')
+  final String? yandexPlaceId;
+  @override
+  @JsonKey(name: 'gis_place_id')
+  final String? gisPlaceId;
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'Place(uid: $uid, placeImage: $placeImage, userImage: $userImage, placeInfo: $placeInfo, placeName: $placeName, address: $address, id: $id, type: $type, source: $source, time: $time, phoneNumber: $phoneNumber, price: $price, comments: $comments, liked: $liked, saved: $saved, likeCount: $likeCount, lat: $lat, lon: $lon)';
+    return 'Place(uid: $uid, placeImage: $placeImage, userImage: $userImage, placeInfo: $placeInfo, placeName: $placeName, address: $address, id: $id, type: $type, source: $source, time: $time, phoneNumber: $phoneNumber, price: $price, comments: $comments, liked: $liked, saved: $saved, likeCount: $likeCount, lat: $lat, lon: $lon, googlePlaceId: $googlePlaceId, yandexPlaceId: $yandexPlaceId, gisPlaceId: $gisPlaceId)';
   }
 
   @override
@@ -451,7 +511,10 @@ class _$PlaceImpl with DiagnosticableTreeMixin implements _Place {
       ..add(DiagnosticsProperty('saved', saved))
       ..add(DiagnosticsProperty('likeCount', likeCount))
       ..add(DiagnosticsProperty('lat', lat))
-      ..add(DiagnosticsProperty('lon', lon));
+      ..add(DiagnosticsProperty('lon', lon))
+      ..add(DiagnosticsProperty('googlePlaceId', googlePlaceId))
+      ..add(DiagnosticsProperty('yandexPlaceId', yandexPlaceId))
+      ..add(DiagnosticsProperty('gisPlaceId', gisPlaceId));
   }
 
   @override
@@ -482,31 +545,41 @@ class _$PlaceImpl with DiagnosticableTreeMixin implements _Place {
             (identical(other.likeCount, likeCount) ||
                 other.likeCount == likeCount) &&
             (identical(other.lat, lat) || other.lat == lat) &&
-            (identical(other.lon, lon) || other.lon == lon));
+            (identical(other.lon, lon) || other.lon == lon) &&
+            (identical(other.googlePlaceId, googlePlaceId) ||
+                other.googlePlaceId == googlePlaceId) &&
+            (identical(other.yandexPlaceId, yandexPlaceId) ||
+                other.yandexPlaceId == yandexPlaceId) &&
+            (identical(other.gisPlaceId, gisPlaceId) ||
+                other.gisPlaceId == gisPlaceId));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      uid,
-      const DeepCollectionEquality().hash(_placeImage),
-      userImage,
-      placeInfo,
-      placeName,
-      address,
-      id,
-      type,
-      source,
-      time,
-      const DeepCollectionEquality().hash(_phoneNumber),
-      price,
-      const DeepCollectionEquality().hash(_comments),
-      const DeepCollectionEquality().hash(_liked),
-      const DeepCollectionEquality().hash(_saved),
-      likeCount,
-      lat,
-      lon);
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        uid,
+        const DeepCollectionEquality().hash(_placeImage),
+        userImage,
+        placeInfo,
+        placeName,
+        address,
+        id,
+        type,
+        source,
+        time,
+        const DeepCollectionEquality().hash(_phoneNumber),
+        price,
+        const DeepCollectionEquality().hash(_comments),
+        const DeepCollectionEquality().hash(_liked),
+        const DeepCollectionEquality().hash(_saved),
+        likeCount,
+        lat,
+        lon,
+        googlePlaceId,
+        yandexPlaceId,
+        gisPlaceId
+      ]);
 
   /// Create a copy of Place
   /// with the given fields replaced by the non-null parameter values.
@@ -543,7 +616,10 @@ abstract class _Place implements Place {
       final List<String> saved,
       final int likeCount,
       required final double lat,
-      required final double lon}) = _$PlaceImpl;
+      required final double lon,
+      @JsonKey(name: 'google_place_id') final String? googlePlaceId,
+      @JsonKey(name: 'yandex_place_id') final String? yandexPlaceId,
+      @JsonKey(name: 'gis_place_id') final String? gisPlaceId}) = _$PlaceImpl;
 
   factory _Place.fromJson(Map<String, dynamic> json) = _$PlaceImpl.fromJson;
 
@@ -582,7 +658,18 @@ abstract class _Place implements Place {
   @override
   double get lat;
   @override
-  double get lon;
+  double get lon; // Sprint 9: tashqi xarita place ID lari.
+// Admin tomonidan kiritiladi; mobile shu ID'lar orqali
+// backend'dan external reviewlarni so'raydi.
+  @override
+  @JsonKey(name: 'google_place_id')
+  String? get googlePlaceId;
+  @override
+  @JsonKey(name: 'yandex_place_id')
+  String? get yandexPlaceId;
+  @override
+  @JsonKey(name: 'gis_place_id')
+  String? get gisPlaceId;
 
   /// Create a copy of Place
   /// with the given fields replaced by the non-null parameter values.

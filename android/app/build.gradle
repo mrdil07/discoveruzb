@@ -2,7 +2,6 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'dev.flutter.flutter-gradle-plugin'
-    id "com.google.gms.google-services" apply false
 }
 
 def localProperties = new Properties()
@@ -36,16 +35,17 @@ if (keystorePropertiesFile.exists()) {
 
 
 android {
+    namespace "uz.dizcoveruzb.discoveruzb"
     compileSdkVersion 36
     ndkVersion flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     sourceSets {
@@ -90,11 +90,8 @@ flutter {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation platform('com.google.firebase:firebase-bom:30.2.0')
-    implementation 'com.google.firebase:firebase-analytics'
-    implementation 'com.android.support:multidex:1.0.3'
-    implementation "androidx.browser:browser:1.4.0"
-    implementation 'com.google.firebase:firebase-dynamic-links-ktx:21.1.0'
-    implementation 'com.google.firebase:firebase-analytics-ktx:21.2.0'
+    // Yangi format'da `$kotlin_version` root build.gradle'dan o'chirildi —
+    // stdlib endi Kotlin plugin orqali avtomatik qo'shiladi.
+    implementation "androidx.multidex:multidex:2.0.1"
+    implementation "androidx.browser:browser:1.8.0"
 }

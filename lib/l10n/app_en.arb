@@ -81,5 +81,33 @@
    "noDataFound": "No data found",
    "verifyPhoneNumber": "Verify Phone Number",
    "enterVerificationCode": "Enter verification code",
-   "resendSms": "Resend SMS"
+   "resendSms": "Resend SMS",
+
+   "appTagline": "Discover Uzbekistan",
+   "telegramHint": "A verification code will be sent via Telegram",
+   "phoneIncomplete": "Phone number is incomplete",
+   "orDivider": "or",
+   "signInWithGoogle": "Sign in with Google",
+   "googleSignInError": "Google sign-in failed",
+   "phoneNumberNotFound": "Phone number not found",
+   "timeExpired": "Time expired",
+   "enterYourInfo": "Enter your details",
+   "registerProfileHint": "Provide your first and last name for your profile",
+   "firstName": "First name",
+   "lastName": "Last name",
+   "firstNameRequired": "Enter your first name",
+   "lastNameRequired": "Enter your last name",
+   "next": "Continue",
+   "createdBy": "Created by MrDil",
+
+   "externalReviewsTitle": "Reviews from external maps",
+   "externalReviewsEmpty": "No reviews from this source",
+   "externalReviewsCount": "{count} reviews",
+   "@externalReviewsCount": {
+     "placeholders": { "count": { "type": "String" } }
+   },
+   "externalReviewsMore": "+{count} more...",
+   "@externalReviewsMore": {
+     "placeholders": { "count": { "type": "String" } }
+   }
 }

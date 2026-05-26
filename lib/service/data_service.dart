@@ -1,298 +1,247 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:discoveruzb/models/comments.dart';
-import 'package:discoveruzb/models/gallery_model.dart';
-import 'package:discoveruzb/service/pref_service.dart';
+import 'package:flutter/foundation.dart';
 
+import '../models/comments.dart';
+import '../models/external_review.dart';
+import '../models/gallery_model.dart';
 import '../models/places_model.dart';
 import '../models/users_model.dart';
+import 'api_client.dart';
 
+/// Backend API bilan ishlaydigan repository.
+///
+/// Eski Supabase'dan `dio` orqali FastAPI'ga ko'chirildi
+/// (`backend/app/api/v1/`).
+///
+/// Endpointlar:
+/// - `GET /users/me` — profil
+/// - `PATCH /users/me`
+/// - `GET /posts/`
+/// - `GET /posts/famous`, `/posts/recommend`, `/posts/search`
+/// - `GET /posts/me/liked`, `/posts/me/saved`
+/// - `POST /posts/{id}/like`, `/save`
+/// - `GET /comments/post/{post_id}`
+/// - `GET /galleries/me`
 class DataService {
-  static final _firestore = FirebaseFirestore.instance;
+  DataService._();
 
-  static String folderUsers = 'users';
-  static String folderPosts = 'posts';
-  static String folderGallery = 'gallery';
-  static String folderNews = "news";
+  static final _api = ApiClient.instance;
 
-  //static String address='hududlar';
+  // ===== USER =====
 
-  //user related
-  static Future storeUser(Users users) async {
-    String? uid = (await Prefs.loadUserId());
-    if (uid != null) {
-      users = users.copyWith(uid: uid); // Update uid using copyWith
-    }
-    return _firestore
-        .collection(folderUsers)
-        .doc(users.uid)
-        .set(users.toJson());
+  static Future<Users> loadUser() async {
+    final response = await _api.dio.get<Map<String, dynamic>>('/users/me');
+    return Users.fromJson(response.data!);
   }
 
-  static Future storeGallery(GalleryModel gallery) async {
-    String galleryId = _firestore.collection(folderGallery).doc().id;
-    await _firestore
-        .collection(folderGallery)
-        .doc(galleryId)
-        .set(gallery.toJson());
-    return "success";
+  static Future<Users> updateUser(Users user) async {
+    final response = await _api.dio.patch<Map<String, dynamic>>(
+      '/users/me',
+      data: {
+        'fullname': user.fullname,
+        'email': user.email.isEmpty ? null : user.email,
+        'language': user.language,
+      }..removeWhere((_, v) => v == null),
+    );
+    return Users.fromJson(response.data!);
   }
 
-  static Future updateGallery(List images, index) async {
-    var value = await _firestore.collection(folderGallery).get();
-    String docId = value.docs[index].id;
-    print("docId:$docId");
-    await _firestore
-        .collection(folderGallery)
-        .doc(docId)
-        .update({"images": FieldValue.arrayUnion(images)});
-    print("qoshimcha qoshildi");
+  // ===== POSTS =====
+
+  static Future<List<Place>> loadFamousPlace({int limit = 20}) async {
+    final response = await _api.dio.get<List<dynamic>>(
+      '/posts/famous',
+      queryParameters: {'limit': limit},
+    );
+    return _parseDirectList(response.data);
   }
 
-  static Future loadGallery() async {
-    List<GalleryModel> gallery = [];
-    var value = await _firestore.collection(folderGallery).get();
-    for (var result in value.docs) {
-      GalleryModel _gallery = GalleryModel.fromJson(result.data());
-      gallery.add(_gallery);
-    }
-    return gallery;
+  static Future<List<Place>> loadRecommendPlace({int limit = 20}) async {
+    final response = await _api.dio.get<List<dynamic>>(
+      '/posts/recommend',
+      queryParameters: {'limit': limit},
+    );
+    return _parseDirectList(response.data);
   }
 
-  static Future loadUser() async {
-    String? uid = await Prefs.loadUserId();
-    var value = await _firestore.collection('users').doc(uid).get();
-    Users users = Users.fromJson(value.data()!);
-    return users;
+  static Future<List<Place>> loadNewAdded({int page = 1, int size = 20}) async {
+    final response = await _api.dio.get<Map<String, dynamic>>(
+      '/posts',
+      queryParameters: {
+        'page': page,
+        'size': size,
+        'sort': 'time',
+        'order': 'desc',
+      },
+    );
+    return _parseList(response.data!);
   }
 
-  static Future updateUser(Users users) async {
-    String? uid = await Prefs.loadUserId();
-    return _firestore.collection(folderUsers).doc(uid).update(users.toJson());
-  }
-
-  //posts
-
-  static loadFeedsNew(
-    String subCategoryName,
-  ) async {
-    List<Place> posts = [];
-
-    var querySnapshot = await _firestore
-        .collection(folderPosts)
-        .where('type', isEqualTo: subCategoryName)
-        .get();
-
-    for (var result in querySnapshot.docs) {
-      Place post = Place.fromJson(result.data());
-      posts.add(post);
-    }
-    return posts;
-  }
-
-  static Future<List<Place>> loadFeedLocation(
-      String collectionPath, String address) async {
-    List<Place> posts = [];
-
-    var querySnapshot = await _firestore
-        .collection(folderPosts)
-        .where('type', isEqualTo: collectionPath)
-        .where('address', isEqualTo: address)
-        .get();
-
-    for (var result in querySnapshot.docs) {
-      Place post = Place.fromJson(result.data());
-      posts.add(post);
-    }
-    return posts;
-  }
-
-  static Future<List<Place>> loadFamousPlace() async {
-    List<Place> posts = [];
-
-    var querySnapshot = await _firestore
-        .collection(folderPosts)
-        .orderBy("likeCount", descending: true)
-        .get();
-
-    for (var result in querySnapshot.docs) {
-      Place post = Place.fromJson(result.data());
-
-      posts.add(post);
-    }
-    return posts;
-  }
-
-  static Future<List<Place>> loadRecommendPlace() async {
-    List<Place> posts = [];
-    var querySnapshot = await _firestore
-        .collection(folderPosts)
-        .where(
-          'liked',
-          arrayContains: 'ZkjvOrSr6jTKPpuBAkMETo3DjMe2',
-        )
-        .get();
-
-    for (var result in querySnapshot.docs) {
-      Place post = Place.fromJson(result.data());
-      posts.insert(0, post);
-    }
-    return posts;
-  }
-
-  static Future<List<Place>> loadPosts() async {
-    List<Place> posts = [];
-
-    var querySnapshot = await _firestore
-        .collection(folderPosts)
-        .where('time',
-            isLessThanOrEqualTo: DateTime.now().microsecondsSinceEpoch)
-        .get();
-    for (var result in querySnapshot.docs) {
-      Place post = Place.fromJson(result.data());
-      posts.insert(0, post);
-    }
-    return posts;
-  }
-
-  static Future loadComments(String docId) async {
-    try {
-      var res = await _firestore.collection(folderPosts).doc(docId).get();
-      return (res['comments'] as List)
-          .map((e) => Comments.fromJson(e))
-          .toList();
-    } catch (e) {
-      return 'Error';
-    }
+  static Future<List<Place>> loadFeedsByType(
+    String type, {
+    int page = 1,
+    int size = 20,
+  }) async {
+    final response = await _api.dio.get<Map<String, dynamic>>(
+      '/posts',
+      queryParameters: {
+        'type': type,
+        'page': page,
+        'size': size,
+      },
+    );
+    return _parseList(response.data!);
   }
 
   static Future<List<Place>?> searchPosts(String keyword) async {
-    List<Place> places = [];
-
-    var querySnapshot1 = await _firestore
-        .collection(folderPosts)
-        .orderBy("placeName")
-        .startAt([keyword]).endAt([keyword]).get();
-
-    for (var result in querySnapshot1.docs) {
-      Place newPlace = Place.fromJson(result.data());
-      places.add(newPlace);
-    }
-    return places;
+    if (keyword.trim().isEmpty) return [];
+    final response = await _api.dio.get<List<dynamic>>(
+      '/posts/search',
+      queryParameters: {'q': keyword},
+    );
+    return _parseDirectList(response.data);
   }
 
-  ///like post
-  static Future<Place> likePost(Place place) async {
-    String? uid = await Prefs.loadUserId();
-
-    await _firestore.collection(folderPosts).doc(place.id).set(place.toJson());
-
-    if (uid == place.uid) {
-      await _firestore
-          .collection(folderUsers)
-          .doc(uid)
-          .collection(folderPosts)
-          .doc(place.id)
-          .set(place.toJson());
-    }
-    return place;
+  static Future<Place> toggleLike(String postId) async {
+    final response = await _api.dio.post<Map<String, dynamic>>(
+      '/posts/$postId/like',
+    );
+    return Place.fromJson(response.data!);
   }
 
-  ///save post
-  static Future<Place> savePost(Place place) async {
-    String? uid = await Prefs.loadUserId();
-
-    await _firestore.collection(folderPosts).doc(place.id).set(place.toJson());
-
-    if (uid == place.uid) {
-      await _firestore
-          .collection(folderUsers)
-          .doc(uid)
-          .collection(folderPosts)
-          .doc(place.id)
-          .set(place.toJson());
-    }
-    return place;
-  }
-
-  /// put comment
-  static Future<Place> putComment(Place place) async {
-    try {
-      String? uid = await Prefs.loadUserId();
-      await _firestore
-          .collection(folderPosts)
-          .doc(place.id)
-          .set(place.toJson());
-      var res = await _firestore.collection(folderPosts).doc(place.id).get();
-      print("place res: $res");
-
-      if (uid == place.uid) {
-        await _firestore
-            .collection(folderUsers)
-            .doc(uid)
-            .collection(folderPosts)
-            .doc(place.id)
-            .set(place.toJson());
-      }
-    } catch (e) {
-      print("error:$e");
-    }
-    return place;
-  }
-
-  static Future<List<Place>> loadSaved() async {
-    List<Place> posts = [];
-    String? uid = await Prefs.loadUserId();
-
-    var querySnapshot = await _firestore
-        .collection(folderPosts)
-        .where('saved', arrayContains: uid)
-        .get();
-    for (var result in querySnapshot.docs) {
-      Place post = Place.fromJson(result.data());
-      posts.insert(0, post);
-    }
-    return posts;
+  static Future<Place> toggleSave(String postId) async {
+    final response = await _api.dio.post<Map<String, dynamic>>(
+      '/posts/$postId/save',
+    );
+    return Place.fromJson(response.data!);
   }
 
   static Future<List<Place>> loadLiked() async {
-    List<Place> posts = [];
-    String? uid = await Prefs.loadUserId();
-
-    var querySnapshot = await _firestore
-        .collection(folderPosts)
-        .where('liked', arrayContains: uid)
-        .get();
-    for (var result in querySnapshot.docs) {
-      Place post = Place.fromJson(result.data());
-      posts.insert(0, post);
-    }
-    return posts;
+    final response = await _api.dio.get<List<dynamic>>(
+      '/posts/me/liked',
+    );
+    return _parseDirectList(response.data);
   }
 
-  static Future<List<Place>> loadNewAdded() async {
-    List<Place> posts = [];
-
-    var querySnapshot = await _firestore
-        .collection('posts')
-        .where('time',
-            isLessThanOrEqualTo: DateTime.now().microsecondsSinceEpoch)
-        .get();
-    for (var result in querySnapshot.docs) {
-      Place post = Place.fromJson(result.data());
-      posts.insert(0, post);
-    }
-    return posts;
+  static Future<List<Place>> loadSaved() async {
+    final response = await _api.dio.get<List<dynamic>>(
+      '/posts/me/saved',
+    );
+    return _parseDirectList(response.data);
   }
 
-  static Future<void> removePost(Place place, postId) async {
-    Users me = await loadUser();
-    await _firestore
-        .collection(folderUsers)
-        .doc(me.uid)
-        .collection(folderPosts)
-        .doc(postId)
-        .delete();
-
-    await _firestore.collection(folderPosts).doc(postId).delete();
+  static Future<List<Place>> loadMyPosts() async {
+    // Admin va oddiy user uchun bir xil endpoint — backend `role` bo'yicha
+    // farqlamaydi (mobile'da ishlatilmaydi). Admin bu ish admin panelida.
+    return loadLiked();
   }
+
+  static Future<void> removePost(String postId) async {
+    await _api.dio.delete('/posts/$postId');
+  }
+
+  // ===== COMMENTS =====
+
+  static Future<List<Comments>> loadComments(String postId) async {
+    final response = await _api.dio.get<List<dynamic>>(
+      '/comments/post/$postId',
+    );
+    return (response.data ?? const [])
+        .map((e) => Comments.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  static Future<Comments> addComment(String postId, String body) async {
+    final response = await _api.dio.post<Map<String, dynamic>>(
+      '/comments/post/$postId',
+      data: {'body': body},
+    );
+    return Comments.fromJson(response.data!);
+  }
+
+  // ===== EXTERNAL REVIEWS (Sprint 9) =====
+
+  /// Backend `GET /posts/{id}/external-reviews` — cache-first.
+  ///
+  /// Google Maps, Yandex Maps va 2GIS reviewlarini bitta javobda
+  /// qaytaradi. Backend o'zi cache TTL'ni hisoblaydi.
+  static Future<ExternalReviewsResponse> loadExternalReviews(
+    String postId,
+  ) async {
+    final response = await _api.dio.get<Map<String, dynamic>>(
+      '/posts/$postId/external-reviews',
+    );
+    return ExternalReviewsResponse.fromJson(response.data!);
+  }
+
+  /// (Admin/moderator) Cache'ni ignore qilib qayta yig'ish.
+  ///
+  /// `sources` `null` bo'lsa — 3 ta source ham.
+  static Future<ExternalReviewsResponse> refreshExternalReviews(
+    String postId, {
+    List<String>? sources,
+  }) async {
+    await _api.dio.post<Map<String, dynamic>>(
+      '/posts/$postId/external-reviews/refresh',
+      data: {
+        if (sources != null) 'sources': sources,
+      },
+    );
+    // Refresh javobida faqat `summaries` keladi; to'liq data uchun GET
+    // qayta chaqiramiz (server cache'ga yangi yozgan).
+    return loadExternalReviews(postId);
+  }
+
+  // ===== GALLERY =====
+
+  static Future<List<GalleryModel>> loadGallery() async {
+    final response = await _api.dio.get<List<dynamic>>('/galleries/me');
+    return (response.data ?? const [])
+        .map((e) => GalleryModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  static Future<GalleryModel> storeGallery(GalleryModel gallery) async {
+    final response = await _api.dio.post<Map<String, dynamic>>(
+      '/galleries',
+      data: gallery.toJson()..remove('id'),
+    );
+    return GalleryModel.fromJson(response.data!);
+  }
+
+  static Future<void> updateGallery(
+    String galleryId,
+    List<String> images,
+  ) async {
+    await _api.dio.post(
+      '/galleries/$galleryId/images',
+      data: {'images': images},
+    );
+  }
+
+  // ===== Helpers =====
+
+  /// Paginated response (`{items, total, page, ...}`) uchun.
+  static List<Place> _parseList(Map<String, dynamic> page) {
+    final items = page['items'] as List<dynamic>? ?? const [];
+    return items
+        .map((e) => Place.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// To'g'ridan-to'g'ri list qaytadigan endpointlar uchun
+  /// (`/posts/famous`, `/posts/recommend`, `/posts/search`,
+  /// `/posts/me/liked`, `/posts/me/saved`).
+  static List<Place> _parseDirectList(List<dynamic>? data) {
+    if (data == null) return const [];
+    return data
+        .map((e) => Place.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+}
+
+/// Hozirda backend tayyor bo'lguncha bo'sh fallback'lar — UI yiqilmasligi
+/// uchun. Sprint 5 tugagandan keyin olib tashlanadi.
+@visibleForTesting
+class StubDataService {
+  static Future<List<Place>> empty() async => const [];
 }

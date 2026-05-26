@@ -36,6 +36,9 @@ _$PlaceImpl _$$PlaceImplFromJson(Map<String, dynamic> json) => _$PlaceImpl(
       likeCount: (json['likeCount'] as num?)?.toInt() ?? 0,
       lat: (json['lat'] as num).toDouble(),
       lon: (json['lon'] as num).toDouble(),
+      googlePlaceId: json['google_place_id'] as String?,
+      yandexPlaceId: json['yandex_place_id'] as String?,
+      gisPlaceId: json['gis_place_id'] as String?,
     );
 
 Map<String, dynamic> _$$PlaceImplToJson(_$PlaceImpl instance) =>
@@ -58,4 +61,7 @@ Map<String, dynamic> _$$PlaceImplToJson(_$PlaceImpl instance) =>
       'likeCount': instance.likeCount,
       'lat': instance.lat,
       'lon': instance.lon,
+      'google_place_id': instance.googlePlaceId,
+      'yandex_place_id': instance.yandexPlaceId,
+      'gis_place_id': instance.gisPlaceId,
     };

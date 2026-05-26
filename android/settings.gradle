@@ -1,22 +1,33 @@
-plugins {
-    id "dev.flutter.flutter-plugin-loader"
-    id "com.android.application" version "7.3.0" apply false
-    // START: FlutterFire Configuration
-    id "com.google.gms.google-services" version "4.3.15" apply false
-    // END: FlutterFire Configuration
-    id "org.jetbrains.kotlin.android" version "1.7.10" apply false
+// Modern Flutter Android settings (Flutter 3.16+).
+//
+// Eski format (`plugins { id "dev.flutter.flutter-plugin-loader" }`
+// version'siz) Gradle 8+ da ishlamaydi — `pluginManagement` orqali
+// flutter_tools gradle subproject'ini avval Gradle'ga ko'rsatamiz.
+
+pluginManagement {
+    def flutterSdkPath = {
+        def properties = new Properties()
+        file("local.properties").withInputStream { properties.load(it) }
+        def flutterSdkPath = properties.getProperty("flutter.sdk")
+        assert flutterSdkPath != null, "flutter.sdk not set in local.properties"
+        return flutterSdkPath
+    }()
+
+    includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
+
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
 }
 
-// Keep the rest of your settings.gradle as is
+plugins {
+    id "dev.flutter.flutter-plugin-loader" version "1.0.0"
+    id "com.android.application" version "8.7.0" apply false
+    id "org.jetbrains.kotlin.android" version "2.1.0" apply false
+    // FlutterFire / Google Sign-In (modulda `apply plugin: ...` orqali yoqiladi)
+    id "com.google.gms.google-services" version "4.4.2" apply false
+}
 
-include ':app'
-
-
-def localPropertiesFile = new File(rootProject.projectDir, "local.properties")
-def properties = new Properties()
-
-assert localPropertiesFile.exists()
-localPropertiesFile.withReader("UTF-8") { reader -> properties.load(reader) }
-
-def flutterSdkPath = properties.getProperty("flutter.sdk")
-assert flutterSdkPath != null, "flutter.sdk not set in local.properties"
+include ":app"
