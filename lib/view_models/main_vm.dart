@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../service/pref_service.dart';
+import '../service/utils.dart';
 
 /// Main shell tab boshqaruvi.
 ///
@@ -30,7 +31,7 @@ class MainViewModel extends ChangeNotifier {
       uid = userId;
       notifyListeners();
     } catch (e) {
-      _setError('Foydalanuvchi ID yuklashda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('Foydalanuvchi ID yuklashda xatolik', e));
     }
   }
 

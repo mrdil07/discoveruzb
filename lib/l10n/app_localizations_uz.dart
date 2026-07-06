@@ -248,19 +248,19 @@ class AppLocalizationsUz extends AppLocalizations {
   String get reSend => 'Qaytadan so\'rov yuborish';
 
   @override
-  String get searchPlaceholder => 'Search places...';
+  String get searchPlaceholder => 'Joylarni qidirish...';
 
   @override
-  String get noDataFound => 'No data found';
+  String get noDataFound => 'Ma\'lumot topilmadi';
 
   @override
-  String get verifyPhoneNumber => 'Verify Phone Number';
+  String get verifyPhoneNumber => 'Telefon raqamni tasdiqlash';
 
   @override
-  String get enterVerificationCode => 'Enter verification code';
+  String get enterVerificationCode => 'Tasdiqlash kodini kiriting';
 
   @override
-  String get resendSms => 'Resend SMS';
+  String get resendSms => 'SMSni qayta yuborish';
 
   @override
   String get appTagline => 'O\'zbekistonni kashf eting';
@@ -326,4 +326,17 @@ class AppLocalizationsUz extends AppLocalizations {
   String externalReviewsMore(String count) {
     return '+$count ta yana...';
   }
+
+  @override
+  String get continueAsGuest => 'Mehmon sifatida davom etish';
+
+  @override
+  String get guestUser => 'Mehmon';
+
+  @override
+  String get loginRequiredTitle => 'Kirish talab qilinadi';
+
+  @override
+  String get loginRequiredMessage =>
+      'Layk bosish, joylarni saqlash va izoh qoldirish uchun tizimga kiring.';
 }

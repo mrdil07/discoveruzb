@@ -5,9 +5,11 @@ import 'package:image_picker/image_picker.dart';
 
 import '../models/places_model.dart';
 import '../models/users_model.dart';
+import '../service/api_client.dart';
 import '../service/data_service.dart';
 import '../service/file_service.dart';
 import '../service/pref_service.dart';
+import '../service/utils.dart';
 
 class AccountViewModel extends ChangeNotifier {
   List<Place> _places = [];
@@ -80,7 +82,7 @@ class AccountViewModel extends ChangeNotifier {
         await _changeProfilePhoto();
       }
     } catch (e) {
-      _setError('Galereyadan rasm tanlashda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('Galereyadan rasm tanlashda xatolik', e));
     }
   }
 
@@ -95,11 +97,14 @@ class AccountViewModel extends ChangeNotifier {
         await _changeProfilePhoto();
       }
     } catch (e) {
-      _setError('Kameradan rasm olishda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('Kameradan rasm olishda xatolik', e));
     }
   }
 
   Future<void> fetchUserProfile() async {
+    // Guest (preview) rejim — profil so'rovi yuborilmaydi
+    // (IndexedStack sababli bu sahifa login'siz ham quriladi).
+    if (!await ApiClient.instance.isAuthenticated) return;
     _setLoading(true);
     clearError();
     try {
@@ -126,7 +131,7 @@ class AccountViewModel extends ChangeNotifier {
       _isAdmin = user.isAdmin;
       notifyListeners();
     } catch (e) {
-      _setError('Foydalanuvchi ma\'lumotlarini yuklashda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('Foydalanuvchi ma\'lumotlarini yuklashda xatolik', e));
     } finally {
       _setLoading(false);
     }
@@ -141,7 +146,7 @@ class AccountViewModel extends ChangeNotifier {
       String downloadUrl = await FileService.uploadFile(_image!, FileService.folderUserImg);
       await _updateUserImageUrl(downloadUrl);
     } catch (e) {
-      _setError('Rasm yuklashda yoki yangilashda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('Rasm yuklashda yoki yangilashda xatolik', e));
     } finally {
       _setLoading(false);
     }
@@ -157,11 +162,13 @@ class AccountViewModel extends ChangeNotifier {
       notifyListeners();
       await fetchUserProfile();
     } catch (e) {
-      _setError('Foydalanuvchi rasmini yangilashda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('Foydalanuvchi rasmini yangilashda xatolik', e));
     }
   }
 
   Future<void> fetchMyPosts() async {
+    // Guest (preview) rejim — auth talab qiladigan so'rov yuborilmaydi.
+    if (!await ApiClient.instance.isAuthenticated) return;
     _setLoading(true);
     clearError();
     try {
@@ -172,7 +179,7 @@ class AccountViewModel extends ChangeNotifier {
 
       // Test mode - return empty list
       if (userId == 'test-user-id') {
-        debugPrint('Test mode: Skipping Firestore, returning empty posts');
+        debugPrint('Test mode: returning empty posts');
         _places = [];
         _setLoading(false);
         return;
@@ -183,13 +190,15 @@ class AccountViewModel extends ChangeNotifier {
       // o'z layklari va saqlanganlarini ko'radi.
       _places = await DataService.loadLiked();
     } catch (e) {
-      _setError('Mening postlarimni yuklashda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('Mening postlarimni yuklashda xatolik', e));
     } finally {
       _setLoading(false);
     }
   }
 
   Future<void> fetchMySavedPosts() async {
+    // Guest (preview) rejim — auth talab qiladigan so'rov yuborilmaydi.
+    if (!await ApiClient.instance.isAuthenticated) return;
     _setLoading(true);
     clearError();
     try {
@@ -197,7 +206,7 @@ class AccountViewModel extends ChangeNotifier {
       
       // Test mode - return empty list
       if (userId == 'test-user-id') {
-        debugPrint('Test mode: Skipping Firestore, returning empty saved posts');
+        debugPrint('Test mode: returning empty saved posts');
         _places = [];
         _setLoading(false);
         return;
@@ -205,7 +214,7 @@ class AccountViewModel extends ChangeNotifier {
       
       _places = await DataService.loadSaved();
     } catch (e) {
-      _setError('Saqlangan postlarni yuklashda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('Saqlangan postlarni yuklashda xatolik', e));
     } finally {
       _setLoading(false);
     }
@@ -226,7 +235,7 @@ class AccountViewModel extends ChangeNotifier {
       notifyListeners();
       await fetchMyPosts();
     } catch (e) {
-      _setError('Postni o\'chirishda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('Postni o\'chirishda xatolik', e));
     } finally {
       _setLoading(false);
     }

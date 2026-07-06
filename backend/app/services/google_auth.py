@@ -1,4 +1,4 @@
-"""Google Sign-In ID token verifikatsiyasi (Firebase'siz)."""
+"""Google Sign-In ID token verifikatsiyasi."""
 
 from __future__ import annotations
 

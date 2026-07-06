@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../service/auth_service.dart';
 import '../service/pref_service.dart';
+import '../service/utils.dart';
 
 /// OTP oqimi — backend `/auth/telegram/*` endpoint'lar bilan ishlaydi.
 ///
@@ -114,7 +115,7 @@ class OTPViewModel extends ChangeNotifier {
       );
       _setError(message);
     } catch (e) {
-      _setError('OTP yuborishda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('OTP yuborishda xatolik', e));
     } finally {
       _setLoading(false);
     }
@@ -153,7 +154,7 @@ class OTPViewModel extends ChangeNotifier {
       final message = _extractError(e, fallback: 'OTP noto\'g\'ri');
       _setError(message);
     } catch (e) {
-      _setError('OTPni tasdiqlashda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('OTPni tasdiqlashda xatolik', e));
     } finally {
       _setLoading(false);
     }

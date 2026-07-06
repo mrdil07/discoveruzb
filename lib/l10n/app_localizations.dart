@@ -717,6 +717,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'+{count} more...'**
   String externalReviewsMore(String count);
+
+  /// No description provided for @continueAsGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue as guest'**
+  String get continueAsGuest;
+
+  /// No description provided for @guestUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest'**
+  String get guestUser;
+
+  /// No description provided for @loginRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in required'**
+  String get loginRequiredTitle;
+
+  /// No description provided for @loginRequiredMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to like, save places and leave comments.'**
+  String get loginRequiredMessage;
 }
 
 class _AppLocalizationsDelegate

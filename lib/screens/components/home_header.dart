@@ -51,7 +51,9 @@ class HomeHeader extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          vm.fullName.isEmpty ? '...' : vm.fullName,
+                          vm.isGuest
+                              ? l10n.guestUser
+                              : (vm.fullName.isEmpty ? '...' : vm.fullName),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.headlineSmall,

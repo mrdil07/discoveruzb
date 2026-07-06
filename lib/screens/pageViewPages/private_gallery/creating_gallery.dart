@@ -178,7 +178,7 @@ class _CreatingGalleryState extends State<CreatingGallery> {
       }
     } catch (e) {
       if (kDebugMode) {
-        print('image error: $e');
+        debugPrint('image error: $e');
       }
     }
   }

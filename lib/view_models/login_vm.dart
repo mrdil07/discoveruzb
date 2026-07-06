@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import '../service/auth_service.dart';
+import '../service/utils.dart';
 
 /// Login oqimi:
 ///   1. Foydalanuvchi telefon raqamini kiritadi.
@@ -86,7 +87,7 @@ class LoginViewModel extends ChangeNotifier {
       _setError(_extractDioError(e, fallback: 'OTP yuborishda xatolik'));
       return false;
     } catch (e) {
-      _setError('OTP yuborishda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('OTP yuborishda xatolik', e));
       return false;
     } finally {
       _setLoading(false);

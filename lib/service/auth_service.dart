@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import '../models/users_model.dart';
 import '../screens/introPages/login_with_phone.dart';
 import 'api_client.dart';
+import 'pref_service.dart';
 
 /// Auth service — backend bilan ishlaydigan to'liq auth oqim.
 ///
@@ -23,9 +24,8 @@ class AuthService {
   final _api = ApiClient.instance;
 
   /// Google Sign-In klient — iOS / Android client ID lar Google
-  /// Cloud Console'da sozlanadi. Mobile platforma'da
-  /// `GoogleService-Info.plist` (iOS) va `google-services.json` (Android)
-  /// ikkalasi ham FAQAT Sign-In uchun kerak — Firebase emas.
+  /// Cloud Console'da sozlanadi (iOS: Info.plist'dagi reversed client
+  /// URL scheme). Token tekshiruvi backend'da: `POST /auth/google`.
   final _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile', 'openid'],
   );
@@ -101,6 +101,7 @@ class AuthService {
       }
     }
     await _api.clearTokens();
+    await Prefs.removeGuestMode();
     try {
       await _googleSignIn.signOut();
     } on Exception {
@@ -119,6 +120,8 @@ class AuthService {
     final access = data['access_token'] as String;
     final refresh = data['refresh_token'] as String;
     await _api.saveTokens(access: access, refresh: refresh);
+    // Login muvaffaqiyatli — guest (preview) rejim tugadi.
+    await Prefs.removeGuestMode();
     return AuthResult(
       user: Users.fromJson(data['user'] as Map<String, dynamic>),
       accessToken: access,

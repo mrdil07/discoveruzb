@@ -16,7 +16,9 @@ class ApiClient {
 
   static const String _baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:8000',
+    // Faqat lokal dev uchun default. Release build'da API_BASE_URL
+    // berilishi MAJBURIY — `_build()` dagi tekshiruv buni ushlaydi.
+    defaultValue: kReleaseMode ? '' : 'http://localhost:8000',
   );
 
   static const _accessTokenKey = 'access_token';
@@ -29,6 +31,18 @@ class ApiClient {
   late final Dio dio = _build();
 
   Dio _build() {
+    if (_baseUrl.isEmpty) {
+      throw StateError(
+        'API_BASE_URL berilmagan. Release build:\n'
+        'flutter build ipa --dart-define=API_BASE_URL=https://api.example.uz',
+      );
+    }
+    if (kReleaseMode && !_baseUrl.startsWith('https://')) {
+      throw StateError(
+        'API_BASE_URL release buildda https:// bilan boshlanishi shart '
+        '(hozir: $_baseUrl).',
+      );
+    }
     final d = Dio(
       BaseOptions(
         baseUrl: '$_baseUrl/api/v1',

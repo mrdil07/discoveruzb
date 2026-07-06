@@ -4,6 +4,7 @@ import 'package:discoveruzb/models/gallery_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../service/api_client.dart';
 import '../service/data_service.dart';
 import '../service/file_service.dart';
 import '../service/pref_service.dart';
@@ -36,16 +37,13 @@ class CreateGalleryVM extends ChangeNotifier {
   Future uploadNewPost(BuildContext context) async {
     isLoading = true;
     notifyListeners();
-    print("images:$imagesFile");
     await FileService.uploadFiles(imagesFile, FileService.folderGallery)
         .then((downloadUrl) => {
               _resPostImage(downloadUrl, context),
             });
-    print("object");
   }
 
   void _resPostImage(List<String> downloadUrl, BuildContext context) {
-    print("image link:$downloadUrl");
     GalleryModel gallery = GalleryModel(
         placeName: placeNameController.text.toString().trim(),
         date: "${DateTime.now()}",
@@ -57,17 +55,22 @@ class CreateGalleryVM extends ChangeNotifier {
     isLoading = true;
     notifyListeners();
     DataService.storeGallery(gallery).then((value) => {
-          debugPrint(value.toString()),
-          print("boldi"),
+          debugPrint('Gallery stored'),
         });
   }
 
   Future getData() async {
+    // Guest (preview) rejim — galereya auth talab qiladi, so'rov yuborilmaydi.
+    if (!await ApiClient.instance.isAuthenticated) {
+      images = [];
+      notifyListeners();
+      return;
+    }
     String? userId = await Prefs.loadUserId();
     
-    // Test mode - skip Firestore
+    // Test mode - skip backend request
     if (userId == 'test-user-id') {
-      debugPrint('Test mode: Skipping Firestore gallery load');
+      debugPrint('Test mode: skipping gallery load');
       images = [];
       notifyListeners();
       return;

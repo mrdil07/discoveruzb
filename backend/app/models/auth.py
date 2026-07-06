@@ -13,7 +13,7 @@ from app.db.base import Base, UUIDPrimaryKeyMixin
 
 
 class AuthOtp(UUIDPrimaryKeyMixin, Base):
-    """Telegram Gateway / DevSMS OTP urinishlari.
+    """Telegram Gateway OTP urinishlari.
 
     Brute-force va rate-limit hisoblari uchun.
     """

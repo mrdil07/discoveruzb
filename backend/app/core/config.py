@@ -90,10 +90,6 @@ class Settings(BaseSettings):
     rate_limit_otp_per_day: int = 10
     rate_limit_api_per_minute: int = 100
 
-    # ===== DevSMS (fallback) =====
-    devsms_token: str = ""
-    devsms_base_url: str = "https://devsms.uz/api/send_sms.php"
-
     # ===== reCAPTCHA (admin login) =====
     # Google reCAPTCHA v3 — invisible (UX yaxshi).
     # https://www.google.com/recaptcha/admin
@@ -117,6 +113,11 @@ class Settings(BaseSettings):
     external_reviews_cache_hours: int = 24
     # Har provider'dan maksimal nechta review olinadi
     external_reviews_per_source_limit: int = 20
+
+    # ===== Ob-havo (OpenWeatherMap proxy) =====
+    # https://openweathermap.org/api — key faqat server tomonda saqlanadi
+    openweather_api_key: str = ""
+    weather_cache_ttl_seconds: int = 900  # 15 daqiqa
 
     @property
     def is_production(self) -> bool:

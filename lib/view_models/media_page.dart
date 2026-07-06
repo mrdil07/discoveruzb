@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../models/places_model.dart';
 import '../service/file_service.dart';
 import '../service/pref_service.dart';
+import '../service/utils.dart';
 
 class MediaPageVM extends ChangeNotifier {
   bool _isLoading = false;
@@ -103,7 +104,7 @@ class MediaPageVM extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      _setError('Rasmlarni tanlashda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('Rasmlarni tanlashda xatolik', e));
     }
   }
 
@@ -163,7 +164,7 @@ class MediaPageVM extends ChangeNotifier {
       _resetFields();
       _clearError();
     } catch (e) {
-      _setError('Post yuklashda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('Post yuklashda xatolik', e));
     } finally {
       _setLoading(false);
     }
@@ -176,7 +177,7 @@ class MediaPageVM extends ChangeNotifier {
       _phone = await Prefs.loadPhone();
       // No notifyListeners here as it's a private helper and _userId, _phone are directly used
     } catch (e) {
-      _setError('Foydalanuvchi ma\'lumotlarini yuklashda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('Foydalanuvchi ma\'lumotlarini yuklashda xatolik', e));
     }
   }
 

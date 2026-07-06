@@ -6,6 +6,7 @@ import '../../../../constants/colors.dart';
 import '../../../../service/auth_service.dart';
 import '../../../../service/pref_service.dart';
 import '../../../../view_models/account_vm.dart';
+import '../../../../view_models/locale_vm.dart';
 
 /// Modern settings page — grouped tiles + logout.
 class SettingsPage extends StatelessWidget {
@@ -55,19 +56,37 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
+  String _languageLabel(String code) {
+    switch (code) {
+      case 'ru':
+        return 'Русский 🇷🇺';
+      case 'en':
+        return 'English 🇬🇧';
+      default:
+        return 'O\'zbekcha 🇺🇿';
+    }
+  }
+
   void _showLanguageSheet(BuildContext context) {
-    _showOptionsSheet(context, 'Tilni tanlang', const [
-      _Option('uz', 'O\'zbekcha', '🇺🇿'),
-      _Option('ru', 'Русский', '🇷🇺'),
-      _Option('en', 'English', '🇬🇧'),
-    ]);
+    _showOptionsSheet(
+      context,
+      'Tilni tanlang',
+      const [
+        _Option('uz', 'O\'zbekcha', '🇺🇿'),
+        _Option('ru', 'Русский', '🇷🇺'),
+        _Option('en', 'English', '🇬🇧'),
+      ],
+      onSelect: (code) =>
+          context.read<LocaleProvider>().setLocale(code),
+    );
   }
 
   void _showOptionsSheet(
     BuildContext context,
     String title,
-    List<_Option> options,
-  ) {
+    List<_Option> options, {
+    ValueChanged<String>? onSelect,
+  }) {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surface,
@@ -116,7 +135,10 @@ class SettingsPage extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  onTap: () => Navigator.pop(ctx),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    onSelect?.call(o.key);
+                  },
                 ),
               ),
             ],
@@ -202,7 +224,9 @@ class SettingsPage extends StatelessWidget {
                         iconBg: AppColors.primarySurface,
                         iconColor: AppColors.primary,
                         title: 'Til',
-                        trailing: 'O\'zbekcha 🇺🇿',
+                        trailing: _languageLabel(
+                          context.watch<LocaleProvider>().locale.languageCode,
+                        ),
                         onTap: () => _showLanguageSheet(context),
                       ),
                       _SettingItem(

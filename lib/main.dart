@@ -6,6 +6,7 @@ import 'package:discoveruzb/view_models/create_gallery_vm.dart';
 import 'package:discoveruzb/view_models/details_vm.dart';
 import 'package:discoveruzb/view_models/external_reviews_vm.dart';
 import 'package:discoveruzb/view_models/home_vm.dart';
+import 'package:discoveruzb/view_models/locale_vm.dart';
 import 'package:discoveruzb/view_models/login_vm.dart';
 import 'package:discoveruzb/view_models/main_vm.dart';
 import 'package:discoveruzb/view_models/media_page.dart';
@@ -26,8 +27,7 @@ void main() async {
   await Hive.initFlutter();
   await Hive.openBox('person');
   await Hive.openBox('restore');
-  // NOTE: Supabase init 2026-05-10 da olib tashlandi —
-  // backend (FastAPI) bilan ishlash uchun `ApiClient` ishlatiladi
+  // Backend (FastAPI) bilan barcha aloqa `ApiClient` orqali
   // (`lib/service/api_client.dart`).
   runApp(
     MultiProvider(
@@ -46,6 +46,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => OTPViewModel()),
         ChangeNotifierProvider(create: (_) => RegistrationViewModel()),
         ChangeNotifierProvider(create: (_) => SearchViewModel()),
+        ChangeNotifierProvider(create: (_) => LocaleProvider()),
       ],
       child: const MyApp(),
     ),
@@ -68,9 +69,12 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    final localeProvider = Provider.of<LocaleProvider>(context);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'DiscoverUzb',
+      // Asosiy til — o'zbek (Settings'da o'zgartirish mumkin).
+      locale: localeProvider.locale,
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -78,9 +82,9 @@ class _MyAppState extends State<MyApp> {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [
-        Locale('en', ''), // English, no country code
-        Locale('uz', ''), // Uzbek
+        Locale('uz', ''), // O'zbek (asosiy)
         Locale('ru', ''), // Russian, no country code
+        Locale('en', ''), // English, no country code
       ],
       themeMode: ThemeMode.light,
       theme: lightTheme,

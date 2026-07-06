@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../models/places_model.dart';
 import '../models/users_model.dart';
+import '../service/api_client.dart';
 import '../service/data_service.dart';
 import '../service/hive_service.dart';
 import '../service/pref_service.dart';
+import '../service/utils.dart';
 
 class HomeViewModel extends ChangeNotifier {
   List<Place> _famousPlaces = [];
@@ -27,6 +29,10 @@ class HomeViewModel extends ChangeNotifier {
 
   String _fullName = '...';
   String get fullName => _fullName;
+
+  /// Guest (preview) rejim — token yo'q, `/auth/me` chaqirilmaydi.
+  bool _isGuest = false;
+  bool get isGuest => _isGuest;
 
   String _userId = '';
   String get userId => _userId;
@@ -56,6 +62,17 @@ class HomeViewModel extends ChangeNotifier {
   Future<void> fetchUser() async {
     _clearError();
     try {
+      // Guest (preview) rejim — profil so'rovisiz davom etamiz.
+      _isGuest = !await ApiClient.instance.isAuthenticated;
+      if (_isGuest) {
+        _fullName = '';
+        _imgUrl = '';
+        _userId = '';
+        _phone = '';
+        notifyListeners();
+        return;
+      }
+
       String? userId = await Prefs.loadUserId();
       
       // Test mode - use local data
@@ -77,7 +94,7 @@ class HomeViewModel extends ChangeNotifier {
       _phone = user.phoneNumber;
       notifyListeners();
     } catch (e) {
-      _setError('Foydalanuvchi ma\'lumotlarini yuklashda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('Foydalanuvchi ma\'lumotlarini yuklashda xatolik', e));
     }
   }
 
@@ -95,7 +112,7 @@ class HomeViewModel extends ChangeNotifier {
       
       _famousPlaces = await DataService.loadFamousPlace();
     } catch (e) {
-      _setError('Mashhur joylarni yuklashda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('Mashhur joylarni yuklashda xatolik', e));
     } finally {
       _setLoading(false);
     }
@@ -115,7 +132,7 @@ class HomeViewModel extends ChangeNotifier {
       
       _recPosts = await DataService.loadRecommendPlace();
     } catch (e) {
-      _setError('Tavsiya etilgan joylarni yuklashda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('Tavsiya etilgan joylarni yuklashda xatolik', e));
     } finally {
       _setLoading(false);
     }
@@ -135,7 +152,7 @@ class HomeViewModel extends ChangeNotifier {
       
       _newAdded = await DataService.loadNewAdded();
     } catch (e) {
-      _setError('Yangi qo\'shilgan joylarni yuklashda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('Yangi qo\'shilgan joylarni yuklashda xatolik', e));
     } finally {
       _setLoading(false);
     }

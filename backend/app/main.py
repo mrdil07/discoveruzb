@@ -22,6 +22,7 @@ from app.api.v1 import (
     stats as stats_router,
     uploads as uploads_router,
     users as users_router,
+    weather as weather_router,
 )
 from app.core.config import settings
 from app.core.logging import configure_logging, get_logger
@@ -110,6 +111,7 @@ def create_app() -> FastAPI:
         categories_router.router,
         stats_router.router,
         uploads_router.router,
+        weather_router.router,
     ]
     for r in api_v1_routers:
         app.include_router(r, prefix="/api/v1")

@@ -277,6 +277,27 @@ MinIO (S3-compatible) bilan integratsiya.
 > **Test rejim:** `+998911490349` raqami uchun OTP `121212` (faqat
 > `kDebugMode`).
 
+**Guest (preview) rejim** (2026-07-06):
+
+- `LoginWithPhone`da "Mehmon sifatida davom etish" tugmasi — login'siz
+  `MainPage`ga kirish. Flag `SharedPreferences('guestMode')`da
+  saqlanadi, keyingi ishga tushirishda splash to'g'ridan-to'g'ri
+  `MainPage`ga yo'naltiradi (`SplashViewModel.isGuest`).
+- Guest ko'ra oladi: Home (famous/recommended/new), qidiruv, joy
+  tafsilotlari (backend `CurrentUserOptional` endpointlari).
+- Auth talab qiladigan amallar — like, save, izohlar, Galereya (2-tab),
+  Profil (3-tab) — `AuthGuard.ensureAuthenticated()` bottom sheet
+  orqali login'ga yo'naltiradi (`lib/screens/components/auth_guard.dart`).
+- Guest'da profil/galereya so'rovlari yuborilmaydi (`HomeViewModel`,
+  `AccountViewModel`, `CreateGalleryVM` guard'lari).
+- Muvaffaqiyatli login yoki logout'da guest flag o'chiriladi
+  (`AuthService`).
+
+**UI tili** (2026-07-06): asosiy (default) til — **o'zbek**.
+`LocaleProvider` (`lib/view_models/locale_vm.dart`) tilni boshqaradi,
+tanlov `SharedPreferences('locale')`da saqlanadi. Settings sahifadagi
+til tanlagich (`uz`/`ru`/`en`) ishlaydi.
+
 #### 4.2.3. ViewModels (`lib/view_models/`)
 
 | ViewModel | Asosiy holatlar |
@@ -295,17 +316,21 @@ MinIO (S3-compatible) bilan integratsiya.
 
 ### 4.3. Tashqi integratsiyalar
 
-#### 4.3.1. DevSMS (`sms_service.dart`)
+> 2026-07-06: Barcha tashqi chaqiriqlar backend orqali. Mobil ilova
+> faqat `ApiClient` (o'z backendimiz) bilan gaplashadi. DevSMS
+> (`sms_service.dart`) va Firebase/Supabase qoldiqlari o'chirildi.
 
-- `POST https://devsms.uz/api/send_sms.php` — JSON body, Bearer token.
-- 6 xona OTP, "MRDIL: Ilovaga kirish uchun parol: <OTP>" matni.
-- Token `--dart-define=DEVSMS_TOKEN=...` orqali (TODO).
+#### 4.3.1. Telegram Gateway (backend, OTP)
 
-#### 4.3.2. OpenWeatherMap (`details_vm.dart`)
+- `POST /api/v1/auth/telegram/send-otp` / `verify-otp` — server-side.
+- `backend/app/services/telegram_gateway.py`, token `TELEGRAM_GATEWAY_TOKEN`.
+- Token sozlanmasa — dev-rejim: kod backend logida (`delivery: "dev"`).
 
-- `GET /data/2.5/weather?lat=...&lon=...&appid=...&units=metric`.
-- Faqat `temp` ko'rsatiladi (AppBar'da).
-- API key `--dart-define=OPENWEATHER_KEY=...` orqali (TODO).
+#### 4.3.2. OpenWeatherMap (backend proxy)
+
+- Mobil: `GET /api/v1/weather?lat=..&lon=..` (`details_vm.dart`, dio).
+- Backend: `backend/app/api/v1/weather.py` — API key faqat serverda
+  (`OPENWEATHER_API_KEY`), javob 15 daqiqa keshlanadi, faqat `temp`.
 
 #### 4.3.3. Map Launcher (`map_launcher: ^3.5.0`)
 
@@ -815,6 +840,38 @@ alembic downgrade -1
 - Supabase migratsiya — Firebase'dan to'liq ko'chirilgan (kodda eslatma'lar qoldi).
 - 3 til UI — UZ/RU/EN ARB fayllarda.
 - DevSMS OTP — ishlaydi (test rejim bilan).
+
+#### ✅ Yaqinda tugallangan (2026-07-06)
+
+- **Tashqi integratsiyalar tozalandi — to'liq o'z backend:**
+  - O'chirildi: `supabase_*.sql`, root `migrations/` (Supabase RLS),
+    `sms_service.dart` (DevSMS), `deep_links.dart` (Firebase Dynamic
+    Links), `weather_model.dart`, `http` paketi, gradle google-services.
+  - Ob-havo backend proxy'ga o'tdi: `GET /api/v1/weather` (key serverda,
+    15 daqiqa kesh, 5 ta yangi pytest).
+  - Login'dagi Google favicon tarmoq chaqirig'i lokal ikonkaga almashdi.
+- **Xavfsizlik yaxshilanishlari:**
+  - `Keys/upload-keystore.jks` git tracking'dan chiqarildi (`Keys/`
+    gitignore'da). ⚠️ Git TARIXIda hali bor — filter-repo + kalit
+    rotatsiyasi kutilmoqda.
+  - Release build'da `API_BASE_URL` majburiy va `https://` talab
+    qilinadi (`api_client.dart` runtime tekshiruv).
+  - PII loglari olib tashlandi (`print` bilan userId/telefon).
+  - Xom `e.toString()` UI'ga chiqarilmaydi — `Utils.friendlyError()`
+    qisqa xabar beradi, texnik tafsilot faqat debug logda.
+- **Guest (preview) rejim:**
+  - Login ekranida "Mehmon sifatida davom etish" — login'siz Home,
+    qidiruv va joy tafsilotlarini ko'rish.
+  - `AuthGuard` bottom sheet — like/save/izoh/galereya/profil uchun
+    login talab qiladi.
+  - Guest'da auth so'rovlari (profil, galereya) yuborilmaydi.
+- **Asosiy til — o'zbek:** `LocaleProvider`, default `uz`,
+  Settings'dagi til tanlagich endi haqiqiy ishlaydi (uz/ru/en,
+  SharedPreferences'da saqlanadi).
+- **L10n to'liq:** 5 ta yetishmagan uz/ru kalit tarjima qilindi
+  (`enterVerificationCode`, `noDataFound`, `resendSms`,
+  `searchPlaceholder`, `verifyPhoneNumber`) — endi
+  `flutter gen-l10n` untranslated'siz o'tadi.
 
 #### ✅ Yaqinda tugallangan (2026-05-12)
 

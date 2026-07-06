@@ -6,6 +6,112 @@ Format va kategoriyalar haqida: `CLAUDE.md §3` ga qarang.
 
 ---
 
+## 2026-07-06 — Tashqi integratsiyalarni tozalash + xavfsizlik
+
+### `supabase_setup.sql`, `supabase_fix.sql`, `migrations/`, `lib/service/sms_service.dart`, `lib/constants/deep_links.dart`, `lib/models/weather_model.*`, `android/settings.gradle`, `.env.example`
+**Modul:** Umumiy — o'lik integratsiya qoldiqlari
+**Kategoriya:** A
+**Sabab:** Firebase/Supabase/DevSMS davridan qolgan o'lik fayllar va
+konfiguratsiya o'chirildi. Barcha aloqa endi faqat o'z FastAPI
+backendimiz orqali. Komment-izlar ham tozalandi (main.dart, account_vm,
+create_gallery_vm, data_service, auth_service, login_with_phone,
+gallery_detail, backend auth/google_auth). `http` paketi pubspec'dan
+olib tashlandi.
+**TZ ta'siri:** §4.3, §9.1.
+
+### `backend/app/api/v1/weather.py` (yangi), `backend/app/schemas/weather.py` (yangi), `backend/app/core/config.py`, `backend/app/main.py`, `backend/tests/test_weather.py` (yangi), `lib/view_models/details_vm.dart`
+**Modul:** Backend + Mobile — ob-havo proxy
+**Kategoriya:** A
+**Sabab:** OpenWeatherMap chaqirig'i mobil ilovadan backendga
+ko'chirildi: `GET /api/v1/weather?lat&lon`, API key faqat serverda
+(`OPENWEATHER_API_KEY`), 15 daqiqa in-memory kesh, 5 ta yangi pytest.
+Mobil endi `ApiClient` orqali oladi; `OPENWEATHER_API_KEY` dart-define
+olib tashlandi.
+**TZ ta'siri:** §4.3.2.
+
+### `Keys/` (gitignore), `lib/service/api_client.dart`, `lib/service/pref_service.dart`, `lib/service/utils.dart`, 11 ta ViewModel, `lib/screens/introPages/login_with_phone.dart`
+**Modul:** Xavfsizlik
+**Kategoriya:** A
+**Sabab:** (1) `Keys/upload-keystore.jks` git tracking'dan chiqarildi,
+`Keys/` gitignore'da — tarix tozalash va kalit rotatsiyasi alohida
+qadam. (2) Release build'da `API_BASE_URL` majburiy va https talab
+qilinadi. (3) PII loglari (`print` bilan userId/telefon) olib
+tashlandi. (4) `Utils.friendlyError()` — xom DioException matni UI'ga
+chiqmaydi. (5) Login'dagi Google favicon tarmoq chaqirig'i lokal
+ikonkaga almashtirildi.
+**TZ ta'siri:** §9.1; `docs/security-rules.md` FastAPI davriga qayta
+yozildi.
+
+### `CLAUDE.md`
+**Modul:** Loyiha qoidalari
+**Kategoriya:** A
+**Sabab:** Stack jadvali reallikka moslandi (Supabase→FastAPI backend,
+DevSMS→Telegram Gateway, ob-havo→backend proxy), taqiqlar va "ehtiyot
+fayllar" bo'limlari yangilandi, repo URL `mrdil07/discoveruzb`.
+
+### `lib/service/data_service.dart` (`_postToModelJson` adapter), `backend/scripts/seed.py`
+**Modul:** Mobile — Backend post parsing (KRITIK bugfix)
+**Kategoriya:** B
+**Sabab:** `Place` Freezed modeli eski camelCase maydonlarni kutadi
+(`placeName`, `placeImage`, `time`...), backend esa snake_case
+qaytaradi (`place_name`, `images`, `created_at`...) — postlar UMUMAN
+parse bo'lmasdi ("type 'Null' is not a subtype of List" xatosi, Home
+doim bo'sh). `_postToModelJson()` adapter qo'shildi: snake_case →
+model JSON, `is_liked`/`is_saved` bool'lari `liked`/`saved`
+ro'yxatlariga (joriy userId bilan) aylantiriladi. Seed'dagi o'lik
+Wikimedia rasm URL'lari (404) picsum.photos'ga almashtirildi (DB'dagi
+mavjud qatorlar ham yangilandi). Endi Home real backend ma'lumotini
+rasmlari bilan ko'rsatadi.
+**TZ ta'siri:** yo'q (B).
+
+---
+
+## 2026-07-06 — Guest (preview) rejim + asosiy til o'zbek
+
+### `lib/screens/introPages/login_with_phone.dart`, `lib/screens/components/auth_guard.dart` (yangi), `lib/view_models/splash_vm.dart`, `lib/screens/introPages/splash_page.dart`, `lib/service/pref_service.dart`, `lib/service/auth_service.dart`
+**Modul:** Mobile — Auth oqim (guest rejim)
+**Kategoriya:** A
+**Sabab:** Foydalanuvchilar login qilmasdan ilovani ko'ra olishi kerak
+(preview). Login ekranida "Mehmon sifatida davom etish" tugmasi;
+`guestMode` flag SharedPreferences'da; splash guest'ni to'g'ridan-to'g'ri
+`MainPage`ga yo'naltiradi; login/logout'da flag tozalanadi.
+**TZ ta'siri:** §4.2.2 (guest oqim), §9.1.
+
+### `lib/screens/pageViewPages/main_screen.dart`, `lib/screens/pageViewPages/category_page/detailsPlace.dart`, `lib/view_models/home_vm.dart`, `lib/view_models/account_vm.dart`, `lib/view_models/create_gallery_vm.dart`, `lib/screens/components/home_header.dart`
+**Modul:** Mobile — Guest guard'lar
+**Kategoriya:** A
+**Sabab:** Auth talab qiladigan amallar (like, save, izoh, Galereya va
+Profil tablari) guest'da `AuthGuard.ensureAuthenticated()` bottom sheet
+orqali login'ga yo'naltiriladi. Guest'da profil/galereya so'rovlari
+yuborilmaydi (401/connection xatolar oldini oladi, chunki `IndexedStack`
+barcha tablarni oldindan quradi). Home header guest'da `guestUser`
+kalitini ko'rsatadi.
+**TZ ta'siri:** §4.2.2.
+
+### `lib/main.dart`, `lib/view_models/locale_vm.dart` (yangi), `lib/screens/pageViewPages/account_pages/settings/settings_page.dart`
+**Modul:** Mobile — Lokalizatsiya (asosiy til)
+**Kategoriya:** A
+**Sabab:** Asosiy (default) til — o'zbek. `LocaleProvider` qo'shildi
+(`locale` SharedPreferences'da, default `uz`), `MaterialApp.locale`
+unga ulandi. Settings'dagi til tanlagich (oldin placeholder edi) endi
+haqiqiy ishlaydi (uz/ru/en).
+**TZ ta'siri:** §4.2.2 (UI tili).
+
+### `lib/l10n/app_uz.arb`, `app_ru.arb`, `app_en.arb`
+**Modul:** Mobile — L10n
+**Kategoriya:** B
+**Sabab:** 5 ta yetishmagan uz/ru tarjima to'ldirildi
+(`enterVerificationCode`, `noDataFound`, `resendSms`,
+`searchPlaceholder`, `verifyPhoneNumber`) hamda guest rejim uchun 4 ta
+yangi kalit qo'shildi (`continueAsGuest`, `guestUser`,
+`loginRequiredTitle`, `loginRequiredMessage`) — uchala tilda.
+**TZ ta'siri:** yo'q.
+
+**Verifikatsiya:** `flutter analyze` 0 error, `flutter gen-l10n`
+untranslated'siz, iOS simulator'da guest oqim va o'zbekcha UI tekshirildi.
+
+---
+
 ## 2026-05-12 — Sprint 13: Tourism redesign + bug fixes
 
 ### Bug fixes (Sprint 12 keyin)

@@ -18,7 +18,7 @@
   "buxoro": "Бухара",
   "qashqa": "Кашкадарья",
   "jizzax": "Джизак",
-  "boshqalar":"Другие",
+  "boshqalar": "Другие",
   "profile": "Профиль",
   "myPosts": "Мои посты        ",
   "mySaved": "Мои Сохраненные посты",
@@ -56,28 +56,27 @@
   "notMatch": "Не соответствует",
   "empty": "Пустой",
   "alreadyMember": "Уже вступил?",
-  "success":"Успешно зарегистрирован в системе",
-  "usedEmail":"Этот адрес электронной почты уже использовался",
-  "tryLater":"Попробуйте позже",
-  "validInfo":"Пожалуйста, введите достоверную информацию",
-  "newAdded":"Новые добавленные",
-  "hotel":"Отели",
-  "sanatoriya":"Санатории",
-  "damOlish":"Зоны отдыха",
-  "basseyn":"Бассейны",
-  "dacha":"Дача",
-  "discoverUz":"Откройте для себя Узбекистан вместе с нами!",
-  "adminPage":"На данный момент только посты будут загружены администратором!",
+  "success": "Успешно зарегистрирован в системе",
+  "usedEmail": "Этот адрес электронной почты уже использовался",
+  "tryLater": "Попробуйте позже",
+  "validInfo": "Пожалуйста, введите достоверную информацию",
+  "newAdded": "Новые добавленные",
+  "hotel": "Отели",
+  "sanatoriya": "Санатории",
+  "damOlish": "Зоны отдыха",
+  "basseyn": "Бассейны",
+  "dacha": "Дача",
+  "discoverUz": "Откройте для себя Узбекистан вместе с нами!",
+  "adminPage": "На данный момент только посты будут загружены администратором!",
   "aloqa": "Контакт:",
-  "searchInfo":"Данные не найдены!",
-  "enterPhoneNumber":"Введите свой номер телефона",
-  "getSMS":"Получить смс-код",
-  "registerWith":"Зарегистрируйтесь со следующими:",
-  "verifySMS":"Подтверждение смс-кода",
-  "smsAuto":"SMS-код будет проверен автоматически",
-  "verifyPhone":"Номер телефона: ",
-  "reSend":"Отправить запрос повторно",
-
+  "searchInfo": "Данные не найдены!",
+  "enterPhoneNumber": "Введите свой номер телефона",
+  "getSMS": "Получить смс-код",
+  "registerWith": "Зарегистрируйтесь со следующими:",
+  "verifySMS": "Подтверждение смс-кода",
+  "smsAuto": "SMS-код будет проверен автоматически",
+  "verifyPhone": "Номер телефона: ",
+  "reSend": "Отправить запрос повторно",
   "appTagline": "Откройте Узбекистан",
   "telegramHint": "Код подтверждения будет отправлен через Telegram",
   "phoneIncomplete": "Номер телефона не заполнен",
@@ -94,15 +93,31 @@
   "lastNameRequired": "Введите фамилию",
   "next": "Продолжить",
   "createdBy": "Создано MrDil",
-
   "externalReviewsTitle": "Отзывы с внешних карт",
   "externalReviewsEmpty": "На этом источнике нет отзывов",
   "externalReviewsCount": "{count} отзывов",
   "@externalReviewsCount": {
-    "placeholders": { "count": { "type": "String" } }
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
   },
   "externalReviewsMore": "+{count} ещё...",
   "@externalReviewsMore": {
-    "placeholders": { "count": { "type": "String" } }
-  }
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "continueAsGuest": "Продолжить как гость",
+  "guestUser": "Гость",
+  "loginRequiredTitle": "Требуется вход",
+  "loginRequiredMessage": "Войдите, чтобы ставить лайки, сохранять места и оставлять комментарии.",
+  "enterVerificationCode": "Введите код подтверждения",
+  "noDataFound": "Данные не найдены",
+  "resendSms": "Отправить SMS повторно",
+  "searchPlaceholder": "Поиск мест...",
+  "verifyPhoneNumber": "Подтверждение номера телефона"
 }

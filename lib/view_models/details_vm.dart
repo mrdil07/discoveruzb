@@ -1,25 +1,9 @@
-import 'dart:convert';
-
-import 'package:discoveruzb/models/weather_model.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 import '../models/places_model.dart';
+import '../service/api_client.dart';
 import '../service/data_service.dart';
-
-/// OpenWeatherMap API key — `--dart-define` orqali beriladi:
-///
-/// ```bash
-/// flutter run --dart-define=OPENWEATHER_API_KEY=<key>
-/// ```
-///
-/// Hech qachon kalitni kodga hardcoded yozmang
-/// (`docs/security-rules.md`).
-const String _openWeatherApiKey = String.fromEnvironment(
-  'OPENWEATHER_API_KEY',
-  defaultValue: '',
-);
+import '../service/utils.dart';
 
 class DetailsVM extends ChangeNotifier {
   bool _isLoading = false;
@@ -70,7 +54,7 @@ class DetailsVM extends ChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      _setError('Layk holatini o\'zgartirishda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('Layk holatini o\'zgartirishda xatolik', e));
     }
   }
 
@@ -87,43 +71,23 @@ class DetailsVM extends ChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      _setError('Saqlash holatini o\'zgartirishda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('Saqlash holatini o\'zgartirishda xatolik', e));
     }
   }
 
+  /// Backend proxy: `GET /weather?lat=..&lon=..` — OpenWeatherMap
+  /// kaliti server tomonda saqlanadi, javob u yerda keshlanadi.
   Future<void> fetchWeather(double lat, double lon) async {
     _setLoadingWeather(true);
     _clearError();
-    if (_openWeatherApiKey.isEmpty) {
-      debugPrint(
-        'OPENWEATHER_API_KEY berilmagan. '
-        '`--dart-define=OPENWEATHER_API_KEY=...` orqali bering.',
-      );
-      _setError('Ob-havo xizmati sozlanmagan.');
-      _setLoadingWeather(false);
-      return;
-    }
     try {
-      final uri = Uri.https(
-        'api.openweathermap.org',
-        '/data/2.5/weather',
-        {
-          'lat': lat.toString(),
-          'lon': lon.toString(),
-          'appid': _openWeatherApiKey,
-          'units': 'metric',
-        },
+      final res = await ApiClient.instance.dio.get<Map<String, dynamic>>(
+        '/weather',
+        queryParameters: {'lat': lat, 'lon': lon},
       );
-      var res = await http.get(uri);
-      if (res.statusCode == 200) {
-        Map<String, dynamic> map = jsonDecode(res.body);
-        WeatherModel weatherModel = WeatherModel.fromJson(map);
-        _temp = weatherModel.main?.temp;
-      } else {
-        _setError('Ob-havo ma\'lumotlarini olishda xatolik: ${res.statusCode}');
-      }
+      _temp = (res.data?['temp'] as num?)?.toDouble();
     } catch (e) {
-      _setError('Ob-havo ma\'lumotlarini yuklashda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('Ob-havo ma\'lumotlarini yuklashda xatolik', e));
     } finally {
       _setLoadingWeather(false);
     }

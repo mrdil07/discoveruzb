@@ -42,9 +42,8 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: ^0.20.2
-  http: ^1.2.0
 
-  # Backend API client + auth (Supabase'dan keyin qo'shildi — 2026-05-10)
+  # Backend API client + auth
   dio: ^5.7.0
   pretty_dio_logger: ^1.4.0
   flutter_secure_storage: ^9.2.2

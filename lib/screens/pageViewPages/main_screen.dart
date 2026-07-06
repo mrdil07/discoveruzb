@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../constants/colors.dart';
 import '../../view_models/home_vm.dart';
 import '../../view_models/main_vm.dart';
+import '../components/auth_guard.dart';
 import 'account_pages/account_page.dart';
 import 'home/home_page.dart';
 
@@ -48,7 +49,14 @@ class MainPage extends StatelessWidget {
         builder: (context, vm, _) {
           return _ModernBottomNav(
             currentIndex: vm.currentPage,
-            onTap: vm.onTap,
+            onTap: (i) async {
+              // Galereya (2) va Profil (3) — auth talab qiladi.
+              if (i >= 2 &&
+                  !await AuthGuard.ensureAuthenticated(context)) {
+                return;
+              }
+              vm.onTap(i);
+            },
           );
         },
       ),

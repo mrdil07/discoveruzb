@@ -27,7 +27,7 @@ class _SplashPageState extends State<SplashPage> {
   void _maybeNavigate(SplashViewModel vm) {
     if (vm.isLoading || _navigated) return;
     _navigated = true;
-    final target = vm.isLoggedIn
+    final target = vm.isLoggedIn || vm.isGuest
         ? const MainPage()
         : const LoginWithPhone();
     WidgetsBinding.instance.addPostFrameCallback((_) {

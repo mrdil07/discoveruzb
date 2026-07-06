@@ -248,19 +248,19 @@ class AppLocalizationsRu extends AppLocalizations {
   String get reSend => 'Отправить запрос повторно';
 
   @override
-  String get searchPlaceholder => 'Search places...';
+  String get searchPlaceholder => 'Поиск мест...';
 
   @override
-  String get noDataFound => 'No data found';
+  String get noDataFound => 'Данные не найдены';
 
   @override
-  String get verifyPhoneNumber => 'Verify Phone Number';
+  String get verifyPhoneNumber => 'Подтверждение номера телефона';
 
   @override
-  String get enterVerificationCode => 'Enter verification code';
+  String get enterVerificationCode => 'Введите код подтверждения';
 
   @override
-  String get resendSms => 'Resend SMS';
+  String get resendSms => 'Отправить SMS повторно';
 
   @override
   String get appTagline => 'Откройте Узбекистан';
@@ -325,4 +325,17 @@ class AppLocalizationsRu extends AppLocalizations {
   String externalReviewsMore(String count) {
     return '+$count ещё...';
   }
+
+  @override
+  String get continueAsGuest => 'Продолжить как гость';
+
+  @override
+  String get guestUser => 'Гость';
+
+  @override
+  String get loginRequiredTitle => 'Требуется вход';
+
+  @override
+  String get loginRequiredMessage =>
+      'Войдите, чтобы ставить лайки, сохранять места и оставлять комментарии.';
 }

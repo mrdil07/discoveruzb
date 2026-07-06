@@ -4,6 +4,7 @@ import '../models/comments.dart';
 import '../models/places_model.dart';
 import '../service/api_response.dart';
 import '../service/data_service.dart';
+import '../service/utils.dart';
 
 class CommentVM extends ChangeNotifier {
   ApiResponse _apiResponse = ApiResponse.initial("loading");
@@ -43,7 +44,7 @@ class CommentVM extends ChangeNotifier {
       _apiResponse = ApiResponse.completed('Sharh muvaffaqiyatli qo\'shildi!');
       await fetchComments(id);
     } catch (e) {
-      _apiResponse = ApiResponse.error('Sharh qo\'shishda xatolik: ${e.toString()}');
+      _apiResponse = ApiResponse.error(Utils.friendlyError('Sharh qo\'shishda xatolik', e));
     } finally {
       notifyListeners();
     }
@@ -70,7 +71,7 @@ class CommentVM extends ChangeNotifier {
         _apiResponse = ApiResponse.completed(fetchedComments);
       }
     } catch (e) {
-      _apiResponse = ApiResponse.error('Sharhlarni yuklashda xatolik: ${e.toString()}');
+      _apiResponse = ApiResponse.error(Utils.friendlyError('Sharhlarni yuklashda xatolik', e));
     } finally {
       notifyListeners();
     }

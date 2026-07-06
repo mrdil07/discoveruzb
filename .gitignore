@@ -67,3 +67,9 @@ run_prod.sh
 
 # Local dev runtime data (MinIO storage, etc.)
 .local/
+
+# Signing keys — hech qachon kommit qilinmasin
+Keys/
+
+# Claude Code shaxsiy sozlamalar
+.claude/settings.local.json

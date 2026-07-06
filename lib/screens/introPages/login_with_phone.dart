@@ -5,13 +5,12 @@ import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
 
 import '../../service/auth_service.dart';
+import '../../service/pref_service.dart';
 import '../pageViewPages/main_screen.dart';
 import 'otp.dart';
 import 'registration.dart';
 
-/// Login ekrani — Telegram OTP + Google Sign-In.
-///
-/// Eski Supabase/DevSMS oqimi to'liq olib tashlandi.
+/// Login ekrani — Telegram OTP + Google Sign-In + mehmon rejimi.
 class LoginWithPhone extends StatefulWidget {
   const LoginWithPhone({Key? key}) : super(key: key);
 
@@ -100,6 +99,8 @@ class _LoginWithPhoneState extends State<LoginWithPhone> {
                 _buildDivider(context),
                 const SizedBox(height: 24),
                 _buildGoogleButton(context),
+                const SizedBox(height: 12),
+                _buildGuestButton(context),
               ],
             ),
           ),
@@ -327,18 +328,39 @@ class _LoginWithPhoneState extends State<LoginWithPhone> {
               height: 18,
               child: CircularProgressIndicator(strokeWidth: 2),
             )
-          : Image.network(
-              'https://www.google.com/favicon.ico',
-              width: 18,
-              height: 18,
-              errorBuilder: (_, __, ___) =>
-                  const Icon(Icons.g_mobiledata, size: 24),
-            ),
+          : const Icon(Icons.g_mobiledata, size: 24),
       label: Text(
         AppLocalizations.of(context)!.signInWithGoogle,
         style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGuestButton(BuildContext context) {
+    return TextButton.icon(
+      onPressed: () async {
+        await Prefs.saveGuestMode(true);
+        if (!context.mounted) return;
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const MainPage()),
+          (route) => false,
+        );
+      },
+      style: TextButton.styleFrom(
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+      ),
+      icon: const Icon(Icons.visibility_outlined, size: 18),
+      label: Text(
+        AppLocalizations.of(context)!.continueAsGuest,
+        style: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          decoration: TextDecoration.underline,
+          decorationColor: Colors.white54,
         ),
       ),
     );

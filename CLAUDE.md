@@ -45,17 +45,19 @@ qoldirishi, ob-havoni ko'rishi va xaritada yo'nalish olishi mumkin.
 | Komponent | Joy | Stack |
 |-----------|-----|-------|
 | Mobil ilova | `lib/` | Flutter 3.27+, Dart 3.x |
-| Backend (BaaS) | Supabase | PostgreSQL, Storage, Auth (qisman) |
+| Backend (o'zimizniki) | `backend/` | FastAPI + PostgreSQL + Redis + MinIO, alembic, pytest |
+| Admin panel | `admin/` | Next.js 15 + Refine |
 | Lokal kesh | Hive boxes | `hive: ^2.2.3`, `hive_flutter: ^1.1.0` |
 | State | Provider | `provider: ^6.1.2` (ChangeNotifier) |
-| SMS OTP | DevSMS | `devsms.uz` HTTP API |
-| Ob-havo | OpenWeatherMap | REST `api.openweathermap.org` |
+| OTP yetkazish | Telegram Gateway | backend orqali, server-side verify |
+| Google Sign-In | google_sign_in | token verify backend'da (`/auth/google`) |
+| Ob-havo | OpenWeatherMap | backend proxy (`GET /api/v1/weather`) |
 
-**Deploy:** Mobile-only (iOS App Store + Google Play). Backend Supabase
-managed (`https://lfyzugkyoopolbmifvxo.supabase.co`).
+**Deploy:** Mobile-only (iOS App Store + Google Play). Backend —
+o'zimizning FastAPI (lokal dev: `http://localhost:8000`, `make setup`).
 **Package name:** `uz.dizcoveruzb.discoveruzb`.
 **Versiya:** 1.2.1+11.
-**Repozitoriy:** `https://github.com/Dilshodbek007/discoveruzb.git`.
+**Repozitoriy:** `https://github.com/mrdil07/discoveruzb.git`.
 
 Batafsil: `docs/TZ.md`.
 
@@ -69,24 +71,24 @@ O'zgarish turini aniqlang va mos keladigan harakatni bajaring.
 
 Quyidagi holatlarda:
 
-- Yangi Supabase jadval/ustun qo'shildi, o'chirildi, type o'zgardi.
-- Yangi RLS politika yoki Edge Function qo'shildi.
+- Yangi DB jadval/ustun qo'shildi, o'chirildi, type o'zgardi (alembic).
+- Yangi backend endpoint/router yoki migratsiya qo'shildi.
 - Yangi ekran (Screen), tab yoki bottom navigation elementi qo'shildi.
 - Mavjud ViewModel butunlay qayta yozildi.
 - Mavjud feature o'chirildi yoki vaqtincha o'chirib qo'yildi.
-- Autentifikatsiya/avtorizatsiya mantig'i o'zgardi (OTP, Supabase Auth).
-- Tashqi servis qo'shildi yoki o'chirildi (DevSMS, OpenWeather, push).
+- Autentifikatsiya/avtorizatsiya mantig'i o'zgardi (OTP, JWT, Google Sign-In).
+- Tashqi servis qo'shildi yoki o'chirildi (Telegram Gateway, OpenWeather, push).
 - Environment variable / `--dart-define` kalit qo'shildi yoki o'chirildi.
 - Build konfiguratsiyasi o'zgardi (Android `build.gradle`, iOS `Info.plist`,
   signing, `pubspec.yaml` major versiya).
-- Flutter SDK yoki major paket versiyasi o'zgardi (`provider`, `supabase_flutter`).
+- Flutter SDK yoki major paket versiyasi o'zgardi (`provider`, `dio`).
 
 **TZ ning qaysi bo'limi yangilanadi:**
 
 | O'zgarish | TZ bo'limi |
 |-----------|-----------|
 | Yangi ekran / feature / RPC | §4 Funksional talablar |
-| Supabase jadval / RLS o'zgarishi | §6 Ma'lumotlar strukturasi |
+| DB jadval / migratsiya o'zgarishi | §6 Ma'lumotlar strukturasi |
 | Stack / paket / SDK | §5 Texnik talablar |
 | Build / store deploy o'zgarishi | §5 + §9 |
 | Yangi modul/feature | §4 + §9 |
@@ -114,7 +116,7 @@ Bu odatda 2–3 qator o'zgartirish — katta vaqt talab qilmaydi.
 - Log xabarlari (`debugPrint`) qo'shilishi yoki o'zgartirilishi.
 - Test qo'shilishi.
 - Komment qo'shilishi yoki to'g'rilanishi.
-- Mavjud Supabase so'roviga `select` ustunini cheklash (tashqi xulq o'zgarmasa).
+- Mavjud backend so'rovida javob maydonlarini cheklash (tashqi xulq o'zgarmasa).
 - Mavjud funksiya ichida algoritm o'zgarishi.
 - Paket patch/minor versiya yangilanishi.
 
@@ -175,16 +177,16 @@ sohada ish boshlanmasin.
 
 - **Sir/parolni kodga yozmaslik.** `--dart-define` yoki `.env` (
   `flutter_dotenv`) faylga yozing. Batafsil: `docs/security-rules.md`.
-- **MySQL'ga to'g'ridan-to'g'ri ulanish** mobile ilovadan — taqiqlanadi
-  (legacy `mysql_service.dart` o'chirilishi kerak).
+- **Mobil ilovadan DB'ga yoki tashqi API'ga to'g'ridan-to'g'ri ulanish**
+  — taqiqlanadi. Barcha aloqa faqat `ApiClient` (backend) orqali.
 - **Xatolikni yutib yuborish** (`try {} catch (e) { debugPrint(...); return []; }`) —
   taqiqlanadi. Foydalanuvchiga ko'rinadigan xato yoki retry mexanizmi bo'lsin.
 - **Telefon raqami orqali admin tekshiruvi** (`if (phone == '+998...')`) —
-  taqiqlanadi. Supabase `role` claim yoki RLS ishlating.
+  taqiqlanadi. Backend `users.role` / `is_admin` maydonini ishlating.
 - **OTP ni client-side tekshirish** (`if (otp != _otpCode)`) — taqiqlanadi.
-  Supabase `auth.verifyOTP` server-side bo'lsin.
+  Backend `POST /auth/telegram/verify-otp` server-side bo'lsin.
 - **Force push** asosiy va reliz branchlariga (`main`, `release/*`) — taqiqlanadi.
-- **Production Supabase'da manual UPDATE/DELETE** — oldin backup va
+- **Production DB'da manual UPDATE/DELETE** — oldin backup va
   tranzaksiya ichida.
 - **Mavjud `places_model` ga majburiy field qo'shish** (`required`) —
   eski qatorlar Freezed deserializerida yiqiladi. `@Default(...)` bering.
@@ -196,13 +198,13 @@ sohada ish boshlanmasin.
 | Fayl | Sabab |
 |------|-------|
 | `lib/models/places_model.dart`, `users_model.dart`, `gallery_model.dart`, `comments.dart` | Freezed model — schema o'zgarsa `dart run build_runner build` kerak |
-| `lib/service/supabase_service.dart` | Auth/connection root — barcha xizmatlar bog'liq |
+| `lib/service/api_client.dart`, `auth_service.dart` | Auth/connection root — barcha xizmatlar bog'liq |
 | `lib/service/data_service.dart` | Asosiy repository — barcha ViewModel chaqiradi |
-| `lib/main.dart` | Provider tree, Hive init, Supabase init |
+| `lib/main.dart` | Provider tree, Hive init |
 | `lib/view_models/otp_vm.dart` | OTP/auth oqim — security critical |
 | `lib/l10n/app_*.arb` | UZ/RU/EN tarjimalar — ekran o'zgarsa kalit qo'shish kerak |
 | `pubspec.yaml`, `android/app/build.gradle`, `ios/Runner/Info.plist` | Build/release |
-| `supabase_setup.sql`, `supabase_fix.sql` | DB schema migratsiya |
+| `backend/alembic/versions/` | DB schema migratsiya |
 | `.env`, `--dart-define` qiymatlari | Sirlar |
 
 Ushbu fayllarga teginishdan oldin — sababni foydalanuvchiga aytib,
@@ -243,9 +245,9 @@ Keyin foydalanuvchidan so'rang — xususan quyidagi hollarda:
 
 - Xavfsizlikka taalluqli qaror (parol, token, autentifikatsiya, RLS).
 - Ma'lumot yo'qotish mumkin bo'lgan amal (`DROP TABLE`, `DELETE FROM`,
-  Supabase migratsiyani orqaga qaytarish).
-- Production Supabase loyihasida o'zgarish.
-- Tashqi xizmatga pullik chaqiruv (DevSMS, push, payment).
+  alembic downgrade).
+- Production backend/DB'da o'zgarish.
+- Tashqi xizmatga pullik chaqiruv (SMS, push, payment).
 - App Store / Play Store ga yangi build chiqarish.
 
 "Ehtimol shunday" degan taxmin bilan ishga kirishmang.

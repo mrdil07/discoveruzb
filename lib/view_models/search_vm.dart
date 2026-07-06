@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/places_model.dart';
 import '../service/data_service.dart';
+import '../service/utils.dart';
 
 class SearchViewModel extends ChangeNotifier {
   bool _isLoading = false;
@@ -43,7 +44,7 @@ class SearchViewModel extends ChangeNotifier {
       List<Place>? results = await DataService.searchPosts(keyword);
       _searchResults = results ?? [];
     } catch (e) {
-      _setError('Qidiruvda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('Qidiruvda xatolik', e));
     } finally {
       _setLoading(false);
     }

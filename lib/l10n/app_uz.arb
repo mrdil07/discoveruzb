@@ -1,5 +1,5 @@
 {
-  "welcome":"Xush Kelibsiz,",
+  "welcome": "Xush Kelibsiz,",
   "findPlaces": "Manzilni topish",
   "famousPlaces": "Mashhur joylar",
   "all": "Barchasi",
@@ -18,7 +18,7 @@
   "buxoro": "Buxora",
   "qashqa": "Qashqadaryo",
   "jizzax": "Jizzax",
-  "boshqalar":"Boshqalar",
+  "boshqalar": "Boshqalar",
   "profile": "Profil",
   "myPosts": "Mening postlarim",
   "mySaved": "Saqlangan postlar",
@@ -57,27 +57,26 @@
   "empty": "Bo'sh",
   "alreadyMember": "Allaqachon ro'yhatdan o'tganmisiz?",
   "success": "Tizimdan muvaffaqiyatli ro'yhatdan o'tildi",
-  "usedEmail":"Bu email allaqachon ishlatilgan",
-  "tryLater":"Keyinroq qayta urinib ko‘ring",
-  "validInfo":"Iltimos, toʻgʻri maʼlumot kiriting",
-  "newAdded":"Yangi qo'shilgan",
-  "hotel":"Mehmonxonalar",
-  "sanatoriya":"Sanatoriyalar",
-  "damOlish":"Dam olish maskanlari",
-  "basseyn":"Cho'milish havzalari",
-  "dacha":"Dacha",
-  "discoverUz":"O'zbekistonni Biz bilan \n kashf eting!",
-  "adminPage":"Hozircha faqat postlar admin tomonidan yuklanadi!",
+  "usedEmail": "Bu email allaqachon ishlatilgan",
+  "tryLater": "Keyinroq qayta urinib ko‘ring",
+  "validInfo": "Iltimos, toʻgʻri maʼlumot kiriting",
+  "newAdded": "Yangi qo'shilgan",
+  "hotel": "Mehmonxonalar",
+  "sanatoriya": "Sanatoriyalar",
+  "damOlish": "Dam olish maskanlari",
+  "basseyn": "Cho'milish havzalari",
+  "dacha": "Dacha",
+  "discoverUz": "O'zbekistonni Biz bilan \n kashf eting!",
+  "adminPage": "Hozircha faqat postlar admin tomonidan yuklanadi!",
   "aloqa": "Aloqa uchun:",
-  "searchInfo":"Hech qanday maʼlumot topilmadi!",
-  "enterPhoneNumber":"Telefon raqamingizni kiriting",
-  "getSMS":"Sms kodni olish",
-  "registerWith":"Quyidagilar bilan ro'yhatdan o'tish:",
-  "verifySMS":"SMS kodni tasdiqlash",
-  "smsAuto":"SMS kod avtomatik tekshiriladi",
-  "verifyPhone":"Telefon raqam: ",
-  "reSend":"Qaytadan so'rov yuborish",
-
+  "searchInfo": "Hech qanday maʼlumot topilmadi!",
+  "enterPhoneNumber": "Telefon raqamingizni kiriting",
+  "getSMS": "Sms kodni olish",
+  "registerWith": "Quyidagilar bilan ro'yhatdan o'tish:",
+  "verifySMS": "SMS kodni tasdiqlash",
+  "smsAuto": "SMS kod avtomatik tekshiriladi",
+  "verifyPhone": "Telefon raqam: ",
+  "reSend": "Qaytadan so'rov yuborish",
   "appTagline": "O'zbekistonni kashf eting",
   "telegramHint": "Telegram orqali tasdiq kodi yuboriladi",
   "phoneIncomplete": "Telefon raqami to'liq emas",
@@ -94,15 +93,31 @@
   "lastNameRequired": "Familiyangizni kiriting",
   "next": "Davom etish",
   "createdBy": "Created by MrDil",
-
   "externalReviewsTitle": "Tashqi xaritalardan sharhlar",
   "externalReviewsEmpty": "Bu manbada sharhlar yo'q",
   "externalReviewsCount": "{count} sharh",
   "@externalReviewsCount": {
-    "placeholders": { "count": { "type": "String" } }
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
   },
   "externalReviewsMore": "+{count} ta yana...",
   "@externalReviewsMore": {
-    "placeholders": { "count": { "type": "String" } }
-  }
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "continueAsGuest": "Mehmon sifatida davom etish",
+  "guestUser": "Mehmon",
+  "loginRequiredTitle": "Kirish talab qilinadi",
+  "loginRequiredMessage": "Layk bosish, joylarni saqlash va izoh qoldirish uchun tizimga kiring.",
+  "enterVerificationCode": "Tasdiqlash kodini kiriting",
+  "noDataFound": "Ma'lumot topilmadi",
+  "resendSms": "SMSni qayta yuborish",
+  "searchPlaceholder": "Joylarni qidirish...",
+  "verifyPhoneNumber": "Telefon raqamni tasdiqlash"
 }

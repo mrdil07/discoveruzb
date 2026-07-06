@@ -96,7 +96,7 @@ POSTS = [
         "price": "Bepul kirish (madrasalar ichkari $5)",
         "phone_numbers": ["+998662330147"],
         "images": [
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Samarkand_Registan_Square.jpg/1280px-Samarkand_Registan_Square.jpg",
+            "https://picsum.photos/seed/registan/1280/850",
         ],
         "lat": 39.654594,
         "lon": 66.975731,
@@ -117,7 +117,7 @@ POSTS = [
         "price": "Bepul (Charvoq cho'milish $3)",
         "phone_numbers": [],
         "images": [
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Chimgan_Mountains.jpg/1280px-Chimgan_Mountains.jpg",
+            "https://picsum.photos/seed/chimgan/1280/850",
         ],
         "lat": 41.560,
         "lon": 70.030,
@@ -138,7 +138,7 @@ POSTS = [
         "price": "30 000 so'm",
         "phone_numbers": ["+998365221234"],
         "images": [
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Bukhara_Ark.jpg/1280px-Bukhara_Ark.jpg",
+            "https://picsum.photos/seed/buxoro-ark/1280/850",
         ],
         "lat": 39.776,
         "lon": 64.414,
@@ -158,7 +158,7 @@ POSTS = [
         "price": "Bepul",
         "phone_numbers": [],
         "images": [
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Tashkent_kurant.jpg/800px-Tashkent_kurant.jpg",
+            "https://picsum.photos/seed/kurant/800/1000",
         ],
         "lat": 41.311,
         "lon": 69.279,
@@ -179,7 +179,7 @@ POSTS = [
         "price": "20 000 so'm",
         "phone_numbers": ["+998762282030"],
         "images": [
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Termez_archaeological_museum.jpg/1024px-Termez_archaeological_museum.jpg",
+            "https://picsum.photos/seed/termiz/1024/700",
         ],
         "lat": 37.224,
         "lon": 67.278,

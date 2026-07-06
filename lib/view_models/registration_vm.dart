@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../service/data_service.dart';
 import '../service/pref_service.dart';
+import '../service/utils.dart';
 
 class RegistrationViewModel extends ChangeNotifier {
   bool _isLoading = false;
@@ -53,7 +54,7 @@ class RegistrationViewModel extends ChangeNotifier {
       await Prefs.saveFullname(fullname);
       _isRegistered = true;
     } catch (e) {
-      _setError('Ro\'yxatdan o\'tishda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('Ro\'yxatdan o\'tishda xatolik', e));
     } finally {
       _setLoading(false);
       notifyListeners();

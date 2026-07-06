@@ -325,4 +325,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String externalReviewsMore(String count) {
     return '+$count more...';
   }
+
+  @override
+  String get continueAsGuest => 'Continue as guest';
+
+  @override
+  String get guestUser => 'Guest';
+
+  @override
+  String get loginRequiredTitle => 'Sign in required';
+
+  @override
+  String get loginRequiredMessage =>
+      'Sign in to like, save places and leave comments.';
 }

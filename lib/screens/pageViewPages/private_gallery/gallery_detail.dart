@@ -13,9 +13,9 @@ class GalleryDetail extends StatefulWidget {
   final int index;
   final List<dynamic> images;
   final String placeName;
-  /// Backend `Gallery.id` (UUID). Eski Supabase versiyasidan kelgan
-  /// `index` parametri bilan birga ishlaydi — `galleryId` mavjud bo'lsa
-  /// shu ishlatiladi (Sprint 4 da `index` butunlay olib tashlanadi).
+  /// Backend `Gallery.id` (UUID). Legacy `index` parametri bilan birga
+  /// ishlaydi — `galleryId` mavjud bo'lsa shu ishlatiladi (keyinchalik
+  /// `index` butunlay olib tashlanadi).
   final String? galleryId;
 
   const GalleryDetail({
@@ -98,7 +98,7 @@ class _GalleryDetailState extends State<GalleryDetail> {
       }
     } catch (e) {
       if (kDebugMode) {
-        print('image error: $e');
+        debugPrint('image error: $e');
       }
     }
   }

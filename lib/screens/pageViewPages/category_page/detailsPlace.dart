@@ -15,6 +15,7 @@ import '../../../models/places_model.dart';
 import '../../../service/utils.dart';
 import '../../../widgets/external_reviews_section.dart';
 import '../../../widgets/hero_image.dart';
+import '../../components/auth_guard.dart';
 
 /// Modern full-screen tourism details (Airbnb / Hopper style).
 ///
@@ -580,7 +581,10 @@ class _ActionRow extends StatelessWidget {
                   : Icons.favorite_border_rounded,
               label: '${place.likeCount}',
               color: isLiked ? AppColors.terracotta : AppColors.textPrimary,
-              onTap: () => detailsVM.toggleLikePost(place, homeVM.userId),
+              onTap: () async {
+                if (!await AuthGuard.ensureAuthenticated(context)) return;
+                await detailsVM.toggleLikePost(place, homeVM.userId);
+              },
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
@@ -592,6 +596,7 @@ class _ActionRow extends StatelessWidget {
               label: 'Saqlash',
               color: isSaved ? AppColors.accent : AppColors.textPrimary,
               onTap: () async {
+                if (!await AuthGuard.ensureAuthenticated(context)) return;
                 await detailsVM.toggleSavePost(place, homeVM.userId);
                 if (!context.mounted) return;
                 Utils.fireToast(isSaved ? l10n.removeSaved : l10n.addedSaved);
@@ -604,12 +609,17 @@ class _ActionRow extends StatelessWidget {
               icon: Icons.chat_bubble_outline_rounded,
               label: 'Izoh',
               color: AppColors.textPrimary,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => CommentPage(place: place),
-                ),
-              ),
+              onTap: () async {
+                // Izohlar ro'yxati ham backend'da auth talab qiladi.
+                if (!await AuthGuard.ensureAuthenticated(context)) return;
+                if (!context.mounted) return;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CommentPage(place: place),
+                  ),
+                );
+              },
             ),
           ),
         ],

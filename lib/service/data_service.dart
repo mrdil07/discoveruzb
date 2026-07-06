@@ -6,11 +6,10 @@ import '../models/gallery_model.dart';
 import '../models/places_model.dart';
 import '../models/users_model.dart';
 import 'api_client.dart';
+import 'pref_service.dart';
 
-/// Backend API bilan ishlaydigan repository.
-///
-/// Eski Supabase'dan `dio` orqali FastAPI'ga ko'chirildi
-/// (`backend/app/api/v1/`).
+/// Backend API bilan ishlaydigan repository (`backend/app/api/v1/`,
+/// `dio` orqali).
 ///
 /// Endpointlar:
 /// - `GET /users/me` — profil
@@ -105,14 +104,16 @@ class DataService {
     final response = await _api.dio.post<Map<String, dynamic>>(
       '/posts/$postId/like',
     );
-    return Place.fromJson(response.data!);
+    final userId = await Prefs.loadUserId() ?? '';
+    return Place.fromJson(_postToModelJson(response.data!, userId));
   }
 
   static Future<Place> toggleSave(String postId) async {
     final response = await _api.dio.post<Map<String, dynamic>>(
       '/posts/$postId/save',
     );
-    return Place.fromJson(response.data!);
+    final userId = await Prefs.loadUserId() ?? '';
+    return Place.fromJson(_postToModelJson(response.data!, userId));
   }
 
   static Future<List<Place>> loadLiked() async {
@@ -221,21 +222,66 @@ class DataService {
   // ===== Helpers =====
 
   /// Paginated response (`{items, total, page, ...}`) uchun.
-  static List<Place> _parseList(Map<String, dynamic> page) {
+  static Future<List<Place>> _parseList(Map<String, dynamic> page) {
     final items = page['items'] as List<dynamic>? ?? const [];
-    return items
-        .map((e) => Place.fromJson(e as Map<String, dynamic>))
-        .toList();
+    return _mapPosts(items);
   }
 
   /// To'g'ridan-to'g'ri list qaytadigan endpointlar uchun
   /// (`/posts/famous`, `/posts/recommend`, `/posts/search`,
   /// `/posts/me/liked`, `/posts/me/saved`).
-  static List<Place> _parseDirectList(List<dynamic>? data) {
-    if (data == null) return const [];
-    return data
-        .map((e) => Place.fromJson(e as Map<String, dynamic>))
+  static Future<List<Place>> _parseDirectList(List<dynamic>? data) {
+    if (data == null) return Future.value(const []);
+    return _mapPosts(data);
+  }
+
+  static Future<List<Place>> _mapPosts(List<dynamic> items) async {
+    final userId = await Prefs.loadUserId() ?? '';
+    return items
+        .map((e) =>
+            Place.fromJson(_postToModelJson(e as Map<String, dynamic>, userId)))
         .toList();
+  }
+
+  /// Backend post JSON (snake_case) → `Place` model JSON.
+  ///
+  /// `Place` Freezed modeli eski camelCase maydon nomlarini ishlatadi;
+  /// model qayta generatsiya qilinmasdan shu adapter orqali moslanadi.
+  /// Backend `is_liked`/`is_saved` bool qaytaradi — UI esa
+  /// `place.liked.contains(userId)` tekshiradi, shuning uchun bool
+  /// joriy user ID'li ro'yxatga aylantiriladi.
+  static Map<String, dynamic> _postToModelJson(
+    Map<String, dynamic> p,
+    String userId,
+  ) {
+    final author = p['author'] as Map<String, dynamic>?;
+    final created = DateTime.tryParse(p['created_at'] as String? ?? '');
+    return {
+      'uid': p['author_id'],
+      'placeImage': p['images'] ?? const <String>[],
+      'userImage': author?['img_url'],
+      'placeInfo': p['place_info'] ?? '',
+      'placeName': p['place_name'] ?? '',
+      'address': p['address'] ?? '',
+      'id': p['id'],
+      'type': p['type'] ?? '',
+      'source': p['source'] ?? '',
+      'time': created?.microsecondsSinceEpoch ?? 0,
+      'phoneNumber': p['phone_numbers'] ?? const <String>[],
+      'price': p['price'] ?? '',
+      'likeCount': p['like_count'] ?? 0,
+      'liked': p['is_liked'] == true && userId.isNotEmpty
+          ? [userId]
+          : const <String>[],
+      'saved': p['is_saved'] == true && userId.isNotEmpty
+          ? [userId]
+          : const <String>[],
+      'lat': p['lat'] ?? 0.0,
+      'lon': p['lon'] ?? 0.0,
+      'google_place_id': p['google_place_id'],
+      'yandex_place_id': p['yandex_place_id'],
+      'gis_place_id': p['gis_place_id'],
+    };
   }
 }
 

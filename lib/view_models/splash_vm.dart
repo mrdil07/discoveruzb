@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../service/api_client.dart';
 import '../service/auth_service.dart';
+import '../service/pref_service.dart';
+import '../service/utils.dart';
 
 /// Splash davrida foydalanuvchi session'ini tekshiradi:
 ///   - Mahalliy JWT mavjudligini.
@@ -18,6 +20,11 @@ class SplashViewModel extends ChangeNotifier {
 
   bool _isLoggedIn = false;
   bool get isLoggedIn => _isLoggedIn;
+
+  /// Guest (preview) rejim — token yo'q, lekin user login'siz
+  /// ko'rishni tanlagan.
+  bool _isGuest = false;
+  bool get isGuest => _isGuest;
 
   bool _isLoading = true;
   bool get isLoading => _isLoading;
@@ -48,6 +55,8 @@ class SplashViewModel extends ChangeNotifier {
 
       final hasToken = await _api.isAuthenticated;
       if (!hasToken) {
+        // Guest (preview) rejim tanlangan bo'lsa — login'siz MainPage'ga.
+        _isGuest = await Prefs.loadGuestMode();
         await delay;
         _isLoggedIn = false;
         _setLoading(false);
@@ -73,7 +82,7 @@ class SplashViewModel extends ChangeNotifier {
 
       await delay;
     } catch (e) {
-      _setError('Sessiyani tekshirishda xatolik: ${e.toString()}');
+      _setError(Utils.friendlyError('Sessiyani tekshirishda xatolik', e));
     } finally {
       _setLoading(false);
     }
